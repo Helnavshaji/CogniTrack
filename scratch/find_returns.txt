@@ -1,0 +1,24 @@
+Line 22: return () => clearInterval(interval)
+Line 25: return <span>{displayedText}</span>
+Line 37: return {
+Line 50: return (
+Line 97: return (
+Line 322: if (!userText) return "sitting"
+Line 327: return "lying"
+Line 332: return "hugging"
+Line 337: return "kissing"
+Line 342: return "excited"
+Line 347: return "happy"
+Line 350: return "sitting"
+Line 453: if (!reportText) return []
+Line 513: return parsed
+Line 519: return (
+Line 527: return (
+Line 548: return content.split("\n").map((p, idx) => p.trim() && (
+Line 563: return { emoji: "😅", label: "Stressed, but keeping it real!" }
+Line 566: return { emoji: "😴", label: "Tired mind — take it easy today!" }
+Line 569: return { emoji: "😋", label: "Fueling your body right is step one!" }
+Line 572: return { emoji: "🥳", label: "Vibing high today! Absolutely love to see it!" }
+Line 574: return { emoji: "🤗", label: "Thanks for checking in today, friend!" }
+Line 579: return (
+Line 782: return (

@@ -1,0 +1,31 @@
+415: 
+416:   const handleAudioReady = async () => {
+417:     try {
+418:       const blob = new Blob(chunksRef.current, { type: "audio/webm" })
+419:       const form = new FormData()
+420:       form.append("audio", blob, "response.webm")
+421:       form.append("session_id", sessionId)
+422:       form.append("user_id", userId)
+423:       form.append("question", question)
+424:       form.append("history", JSON.stringify(history))
+425: 
+426:       const res = await axios.post(`${API}/session/respond`, form)
+427:       const data = res.data
+428: 
+429:       setLastTranscript(data.transcript)
+430:       if (data.alert) setAlert(data.alert)
+431: 
+432:       if (data.status === "complete") {
+433:         if (data.report) setReport(data.report)
+434:         setState("done")
+435:       } else {
+436:         const newHistory = [
+437:           ...history,
+438:           { role: "assistant", content: question },
+439:           { role: "user", content: data.transcript }
+440:         ]
+441:         setHistory(newHistory)
+442:         setQuestion(data.next_question)
+443:         setExchangeCount(c => c + 1)
+444:         setState("question")
+445:       }

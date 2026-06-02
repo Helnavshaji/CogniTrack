@@ -1,0 +1,4 @@
+{
+  "target": "body {\n  background-color: var(--bg-dark);\n  color: var(--text-primary);\n  font-family: var(--font-body);\n  min-height: 100vh;\n  overflow-x: hidden;\n  position: relative;\n}",
+  "replacement": "html, body, #root {\n  background: transparent !important;\n  min-height: 100vh;\n}\n\nbody {\n  color: var(--text-primary);\n  font-family: var(--font-body);\n  overflow-x: hidden;\n  position: relative;\n}"
+}

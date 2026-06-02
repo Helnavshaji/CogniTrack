@@ -1,0 +1,66 @@
+75:         session_id=session_id + "_" + str(uuid.uuid4())[:8],
+76:         transcript=transcript_text,
+77:         audio_path=audio_path,
+78:         ai_analysis=ai_analysis,
+79:         **{k: all_features.get(k) for k in [
+80:             "speech_rate_wpm", "pause_count", "mean_pause_duration_s",
+81:             "pause_ratio", "energy_mean", "energy_variability",
+82:             "pitch_mean_hz", "pitch_variability", "avg_sentence_length",
+83:             "flesch_kincaid_grade", "type_token_ratio", "filler_rate",
+84:             "semantic_coherence", "emotional_valence", "self_reference_ratio"
+85:         ]}
+86:     )
+87:     db.add(new_session)
+88:     db.commit()
+89: 
+90:     # 6. Update baseline
+91:     baseline_record = db.query(UserBaseline).filter(
+92:         UserBaseline.user_id == user_id
+93:     ).first()
+94:     existing_baseline = baseline_record.baseline_data if baseline_record else {}
+95:     session_count = db.query(Session).filter(Session.user_id == user_id).count()
+96:     new_baseline = update_baseline(existing_baseline, all_features)
+97: 
+98:     if baseline_record:
+99:         baseline_record.baseline_data = new_baseline
+100:         baseline_record.session_count = session_count
+101:         baseline_record.updated_at = datetime.utcnow()
+102:     else:
+103:         baseline_record = UserBaseline(
+104:             user_id=user_id,
+105:             baseline_data=new_baseline,
+106:             session_count=session_count
+107:         )
+108:         db.add(baseline_record)
+109:     db.commit()
+110: 
+111:     # 7. Detect drift
+112:     alert = detect_drift(all_features, new_baseline, session_count)
+113: 
+114:     # 8. Rebuild full conversation history
+115:     # history from frontend = everything BEFORE this exchange
+116:     conversation_history = json.loads(history)
+117:     
+118:     # Now add current question + current answer
+119:     conversation_history.append({
+120:         "role": "assistant",
+121:         "content": question
+122:     })
+123:     conversation_history.append({
+124:         "role": "user", 
+125:         "content": transcript_text
+126:     })
+127: 
+128:     exchange_count = len([m for m in conversation_history if m["role"] == "user"])
+129:     print(f"Exchange #{exchange_count} complete. Total messages: {len(conversation_history)}")
+130: 
+131:     # 9. After 4 exchanges — generate report
+132:     if exchange_count >= 4:
+133:         print("Session complete — generating personal report...")
+134:         report = generate_session_report(conversation_history, all_features)
+135:         return {
+136:             "status": "complete",
+137:             "transcript": transcript_text,
+138:             "alert": alert,
+139:             "report": report
+140:         }

@@ -1,0 +1,31 @@
+560:   const getSentimentEmoji = (reportText, alertData) => {
+561:     const text = ((reportText || "") + " " + (alertData?.summary || "")).toLowerCase()
+562:     if (text.includes("stress") || text.includes("anxi") || text.includes("worry") || text.includes("overwhelmed")) {
+563:       return { emoji: "😅", label: "Stressed, but keeping it real!" }
+564:     }
+565:     if (text.includes("sleep") || text.includes("tired") || text.includes("exhausted") || text.includes("dream")) {
+566:       return { emoji: "😴", label: "Tired mind — take it easy today!" }
+567:     }
+568:     if (text.includes("eat") || text.includes("food") || text.includes("meal")) {
+569:       return { emoji: "😋", label: "Fueling your body right is step one!" }
+570:     }
+571:     if (text.includes("happy") || text.includes("good") || text.includes("great") || text.includes("smile") || text.includes("celebrate")) {
+572:       return { emoji: "🥳", label: "Vibing high today! Absolutely love to see it!" }
+573:     }
+574:     return { emoji: "🤗", label: "Thanks for checking in today, friend!" }
+575:   }
+576: 
+577:   const sentiment = getSentimentEmoji(report, alert)
+578: 
+579:   return (
+580:     <div style={{ maxWidth: 680, margin: "20px auto 0", padding: "0 20px" }}>
+581:       {/* Dynamic Style Sheet Overlay */}
+582:       <style>{`
+583:         @keyframes neon-pulse-green {
+584:           0%, 100% { box-shadow: 0 0 10px rgba(0, 245, 212, 0.4); border-color: rgba(0, 245, 212, 0.4); }
+585:           50% { box-shadow: 0 0 20px rgba(0, 245, 212, 0.8); border-color: rgba(0, 245, 212, 0.8); }
+586:         }
+587:         @keyframes neon-pulse-orange {
+588:           0%, 100% { box-shadow: 0 0 10px rgba(255, 159, 28, 0.4); border-color: rgba(255, 159, 28, 0.4); }
+589:           50% { box-shadow: 0 0 20px rgba(255, 159, 28, 0.8); border-color: rgba(255, 159, 28, 0.8); }
+590:         }

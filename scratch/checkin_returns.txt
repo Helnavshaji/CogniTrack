@@ -1,0 +1,201 @@
+550:         marginBottom: 12, 
+551:         lineHeight: 1.8, 
+552:         fontSize: 15, 
+553:         color: "#E2E8F0" 
+554:       }}>
+555:         {p}
+556:       </p>
+557:     ))
+558:   }
+559: 
+560:   const getSentimentEmoji = (reportText, alertData) => {
+561:     const text = ((reportText || "") + " " + (alertData?.summary || "")).toLowerCase()
+562:     if (text.includes("stress") || text.includes("anxi") || text.includes("worry") || text.includes("overwhelmed")) {
+563:       return { emoji: "😅", label: "Stressed, but keeping it real!" }
+564:     }
+565:     if (text.includes("sleep") || text.includes("tired") || text.includes("exhausted") || text.includes("dream")) {
+566:       return { emoji: "😴", label: "Tired mind — take it easy today!" }
+567:     }
+568:     if (text.includes("eat") || text.includes("food") || text.includes("meal")) {
+569:       return { emoji: "😋", label: "Fueling your body right is step one!" }
+570:     }
+571:     if (text.includes("happy") || text.includes("good") || text.includes("great") || text.includes("smile") || text.includes("celebrate")) {
+572:       return { emoji: "🥳", label: "Vibing high today! Absolutely love to see it!" }
+573:     }
+574:     return { emoji: "🤗", label: "Thanks for checking in today, friend!" }
+575:   }
+576: 
+577:   const sentiment = getSentimentEmoji(report, alert)
+578: 
+579:   return (
+580:     <div style={{ maxWidth: 680, margin: "20px auto 0", padding: "0 20px" }}>
+581:       {/* Dynamic Style Sheet Overlay */}
+582:       <style>{`
+583:         @keyframes neon-pulse-green {
+584:           0%, 100% { box-shadow: 0 0 10px rgba(0, 245, 212, 0.4); border-color: rgba(0, 245, 212, 0.4); }
+585:           50% { box-shadow: 0 0 20px rgba(0, 245, 212, 0.8); border-color: rgba(0, 245, 212, 0.8); }
+586:         }
+587:         @keyframes neon-pulse-orange {
+588:           0%, 100% { box-shadow: 0 0 10px rgba(255, 159, 28, 0.4); border-color: rgba(255, 159, 28, 0.4); }
+589:           50% { box-shadow: 0 0 20px rgba(255, 159, 28, 0.8); border-color: rgba(255, 159, 28, 0.8); }
+590:         }
+591:         .spin-on-hover:hover .emoji-spin {
+592:           animation: spin-fun 0.8s ease-in-out;
+593:         }
+594:         .pulse-btn {
+595:           animation: pulse 2.5s infinite;
+596:         }
+597:         .chat-bubble-in {
+598:           animation: slideInUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+599:         }
+600: 
+601:         /* Character floating particles styling */
+602:         .part-zzz {
+603:           position: absolute;
+604:           font-family: var(--font-heading);
+605:           font-weight: 800;
+606:           color: var(--accent-teal);
+607:           opacity: 0;
+608:           animation: float-up-fade 2.5s infinite linear;
+609:         }
+610:         .part-zzz.p-1 { left: 72%; top: 42%; animation-delay: 0s; font-size: 14px; }
+611:         .part-zzz.p-2 { left: 77%; top: 32%; animation-delay: 0.8s; font-size: 18px; }
+612:         .part-zzz.p-3 { left: 82%; top: 22%; animation-delay: 1.6s; font-size: 24px; }
+613: 
+614:         .part-heart {
+615:           position: absolute;
+616:           opacity: 0;
+617:           animation: float-up-fade-heart 3s infinite ease-out;
+618:         }
+619:         .part-heart.h-1 { left: 18%; top: 50%; animation-delay: 0s; font-size: 18px; }
+620:         .part-heart.h-2 { left: 78%; top: 45%; animation-delay: 1s; font-size: 22px; }
+621:         .part-heart.h-3 { left: 45%; top: 20%; animation-delay: 1.8s; font-size: 20px; }
+622: 
+623:         .part-kiss {
+624:           position: absolute;
+625:           opacity: 0;
+626:           animation: float-up-fade-kiss 2.5s infinite ease-out;
+627:         }
+628:         .part-kiss.k-1 { left: 53%; top: 53%; animation-delay: 0s; font-size: 22px; }
+629:         .part-kiss.k-2 { left: 47%; top: 48%; animation-delay: 0.9s; font-size: 18px; }
+630:         .part-kiss.k-3 { left: 51%; top: 38%; animation-delay: 1.7s; font-size: 20px; }
+631: 
+632:         .part-star {
+633:           position: absolute;
+634:           opacity: 0;
+635:           animation: float-around-star 2.2s infinite ease-in-out;
+636:         }
+637:         .part-star.st-1 { left: 12%; top: 32%; animation-delay: 0s; font-size: 16px; }
+638:         .part-star.st-2 { left: 82%; top: 28%; animation-delay: 0.7s; font-size: 14px; }
+639:         .part-star.st-3 { left: 48%; top: 12%; animation-delay: 1.4s; font-size: 18px; }
+640: 
+641:         .part-smile {
+642:           position: absolute;
+643:           opacity: 0;
+644:           animation: float-up-fade 2.5s infinite ease-out;
+645:         }
+646:         .part-smile.sm-1 { left: 80%; top: 38%; animation-delay: 0s; font-size: 16px; }
+647:         .part-smile.sm-2 { left: 16%; top: 32%; animation-delay: 1.2s; font-size: 14px; }
+648: 
+649:         @keyframes float-up-fade {
+650:           0% { transform: translateY(0) scale(0.7); opacity: 0; }
+651:           20% { opacity: 0.8; }
+652:           80% { opacity: 0.8; }
+653:           100% { transform: translateY(-50px) translateX(15px) scale(1.1); opacity: 0; }
+654:         }
+655: 
+656:         @keyframes float-up-fade-heart {
+657:           0% { transform: translateY(0) scale(0.6) rotate(0deg); opacity: 0; }
+658:           25% { opacity: 0.9; }
+659:           100% { transform: translateY(-70px) translateX(-15px) scale(1.2) rotate(15deg); opacity: 0; }
+660:         }
+661: 
+662:         @keyframes float-up-fade-kiss {
+663:           0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 0; }
+664:           30% { opacity: 0.9; }
+665:           100% { transform: translateY(-60px) translateX(20px) scale(1.3) rotate(-20deg); opacity: 0; }
+666:         }
+667: 
+668:         @keyframes float-around-star {
+669:           0% { transform: translateY(0) rotate(0deg) scale(0.5); opacity: 0; }
+670:           50% { opacity: 1; transform: translateY(-15px) rotate(180deg) scale(1.2); }
+671:           100% { transform: translateY(-30px) rotate(360deg) scale(0.5); opacity: 0; }
+672:         }
+673:       `}</style>
+674: 
+675:       {error && (
+676:         <div style={{
+677:           background: "rgba(239, 83, 80, 0.15)",
+678:           border: "1px solid rgba(239, 83, 80, 0.4)",
+679:           borderRadius: 16, 
+680:           padding: 16, 
+681:           color: "#F87171",
+682:           marginBottom: 20, 
+683:           fontSize: 15, 
+684:           textAlign: "center",
+685:           boxShadow: "0 4px 20px rgba(239, 83, 80, 0.1)",
+686:           animation: "slideInUp 0.4s ease"
+687:         }}>
+688:           ⚠️ {error}
+689:         </div>
+690:       )}
+691: 
+692:       {/* IDLE */}
+693:       {state === "idle" && (
+694:         <div className="glass" style={{
+695:           borderRadius: 32, 
+696:           padding: '48px 36px',
+697:           boxShadow: "0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05)", 
+698:           textAlign: "center",
+699:           border: '1px solid rgba(255, 255, 255, 0.05)',
+700:           animation: 'slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
+701:         }}>
+702:           <div style={{ fontSize: 72, marginBottom: 20, animation: 'floating 4s infinite ease-in-out' }}>💬</div>
+703:           <h2 style={{ 
+704:             fontSize: 32, 
+705:             marginBottom: 16, 
+706:             background: "linear-gradient(90deg, var(--accent-green-bright), var(--accent-teal))", 
+707:             WebkitBackgroundClip: "text", 
+708:             WebkitTextFillColor: "transparent",
+709:             fontFamily: "var(--font-heading)"
+710:           }}>
+711:             Hey, I'm Alex!
+712:           </h2>
+713:           <p style={{
+714:             color: "var(--text-secondary)", 
+715:             lineHeight: 1.8, 
+716:             marginBottom: 36, 
+717:             fontSize: 16,
+718:             maxWidth: '90%',
+719:             margin: '0 auto 36px'
+720:           }}>
+721:             Your conversational partner for everyday mind check-ins. Let's do a quick 4-question voice chat. Tap start to connect!
+722:           </p>
+723:           <button 
+724:             onClick={startSession} 
+725:             className="btn-press pulse-btn"
+726:             style={{
+727:               padding: "18px 48px", 
+728:               background: "linear-gradient(135deg, var(--accent-forest) 0%, var(--accent-teal) 100%)",
+729:               color: "white", 
+730:               border: "none", 
+731:               borderRadius: 100,
+732:               fontSize: 18, 
+733:               fontWeight: 800, 
+734:               cursor: "pointer",
+735:               fontFamily: "var(--font-heading)",
+736:               boxShadow: "0 10px 30px rgba(30, 81, 40, 0.4)",
+737:               letterSpacing: '0.5px'
+738:             }}
+739:           >
+740:             Let's Chat 💬
+741:           </button>
+742:           <p style={{ color: "rgba(255,255,255,0.25)", fontSize: 13, marginTop: 20 }}>
+743:             3–5 minutes · Voice check-in
+744:           </p>
+745:         </div>
+746:       )}
+747: 
+748:       {/* LOADING */}
+749:       {state === "loading" && (
+750:         <div className="glass" style={{

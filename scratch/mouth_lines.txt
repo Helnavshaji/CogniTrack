@@ -1,0 +1,31 @@
+270:               <circle cx="57" cy="50" r="2.5" fill="#050e0b" />
+271:               <circle cx="58" cy="49" r="0.8" fill="white" />
+272:             </g>
+273:           )}
+274: 
+275:           {/* MOUTH changing as per pose */}
+276:           {isSpeaking ? (
+277:             <ellipse cx="50" cy="61" rx="2.5" ry="3.5" fill="#050e0b" style={{ animation: "speak 0.4s infinite alternate" }} />
+278:           ) : pose === "kissing" ? (
+279:             // Puckered blowing kiss mouth
+280:             <circle cx="50" cy="61" r="3.2" fill="#050e0b" stroke="var(--accent-pink)" strokeWidth="1" />
+281:           ) : pose === "excited" ? (
+282:             // Wide open happy mouth
+283:             <path d="M 45,60 Q 50,69 55,60 Z" fill="#050e0b" />
+284:           ) : pose === "happy" || pose === "hugging" ? (
+285:             // Sweet smile
+286:             <path d="M 44,59 Q 50,65 56,59" stroke="#050e0b" strokeWidth="2.2" fill="none" strokeLinecap="round" />
+287:           ) : pose === "lying" ? (
+288:             // Peaceful neutral line
+289:             <line x1="46" y1="61" x2="54" y2="61" stroke="#050e0b" strokeWidth="1.5" strokeLinecap="round" />
+290:           ) : (
+291:             // Standard listening line
+292:             <path d="M 46,60 Q 50,62 54,60" stroke="#050e0b" strokeWidth="1.2" fill="none" />
+293:           )}
+294: 
+295:           {/* Blush */}
+296:           <circle cx="36" cy="57" r="2.5" fill="var(--accent-pink)" opacity="0.4" />
+297:           <circle cx="64" cy="57" r="2.5" fill="var(--accent-pink)" opacity="0.4" />
+298:         </g>
+299:       </svg>
+300:     </div>

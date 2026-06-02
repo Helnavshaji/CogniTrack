@@ -1,0 +1,4 @@
+{
+  "target": "::-webkit-scrollbar {\n  width: 8px;\n}\n::-webkit-scrollbar-track {\n  background: var(--bg-dark);\n}\n::-webkit-scrollbar-thumb {\n  background: rgba(255, 255, 255, 0.15);\n  border-radius: 4px;\n}\n::-webkit-scrollbar-thumb:hover {\n  background: rgba(255, 255, 255, 0.3);\n}",
+  "replacement": "::-webkit-scrollbar {\n  width: 6px;\n}\n::-webkit-scrollbar-track {\n  background: transparent;\n}\n::-webkit-scrollbar-thumb {\n  background: linear-gradient(180deg, var(--forest-light), var(--leaf-morning), var(--gold-light));\n  border-radius: 10px;\n  box-shadow: 0 0 6px var(--leaf-morning);\n}\n::-webkit-scrollbar-thumb:hover {\n  background: linear-gradient(180deg, var(--leaf-morning), var(--gold-light));\n  box-shadow: 0 0 10px var(--gold-light);\n}"
+}

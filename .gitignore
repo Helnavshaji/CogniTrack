@@ -1,0 +1,34 @@
+# Node dependencies
+node_modules/
+frontend/node_modules/
+
+# Python virtual environment
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Local databases and data
+data/
+backend/data/
+
+# Audio files
+audio/
+backend/audio/
+*.webm
+*.wav
+*.mp3
+
+# Build outputs
+dist/
+frontend/dist/
+
+# Environment files
+.env
+.env.local
+
+# IDE and OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

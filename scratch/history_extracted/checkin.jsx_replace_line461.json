@@ -1,0 +1,4 @@
+{
+  "target": "const ORBS_CONFIG = [\n  { icon: \"\ud83c\udf11\", label: \"seed\" },\n  { icon: \"\ud83c\udf31\", label: \"sprout\" },\n  { icon: \"\ud83c\udf38\", label: \"blossom\" },\n  { icon: \"\ud83c\udf33\", label: \"full tree\" }\n]",
+  "replacement": "const ORBS_CONFIG = [\n  { icon: \"\ud83c\udf30\", label: \"seed\" },\n  { icon: \"\ud83c\udf31\", label: \"sprout\" },\n  { icon: \"\ud83c\udf38\", label: \"blossom\" },\n  { icon: \"\ud83c\udf33\", label: \"full tree\" }\n]"
+}

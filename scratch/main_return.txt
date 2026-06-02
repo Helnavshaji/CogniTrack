@@ -1,0 +1,51 @@
+770:               let animation = "none"
+771:               let border = "1px solid rgba(255,255,255,0.15)"
+772:               let bg = "rgba(255,255,255,0.05)"
+773: 
+774:               if (isCompleted) {
+775:                 animation = "neon-pulse-green 2s infinite"
+776:                 bg = "rgba(0, 245, 212, 0.2)"
+777:               } else if (isCurrent) {
+778:                 animation = "neon-pulse-orange 2s infinite"
+779:                 bg = "rgba(255, 159, 28, 0.2)"
+780:               }
+781: 
+782:               return (
+783:                 <div key={i} style={{
+784:                   height: 18, 
+785:                   width: 18, 
+786:                   borderRadius: "50%",
+787:                   backgroundColor: bg,
+788:                   border,
+789:                   animation,
+790:                   transition: "all 0.4s ease"
+791:                 }} />
+792:               )
+793:             })}
+794:           </div>
+795: 
+796:           {/* DYNAMIC EMOTIONAL 3D CHARACTER */}
+797:           <ListeningCharacter pose={charPose} state={state} />
+798: 
+799:           {/* Alex question bubble with typewriter */}
+800:           {state !== "analyzing" && question && (
+801:             <div className="glass" style={{
+802:               borderRadius: 28,
+803:               borderBottomLeftRadius: 4,
+804:               padding: 24, 
+805:               boxShadow: "0 15px 40px rgba(0,0,0,0.3)", 
+806:               marginBottom: 24,
+807:               border: "1px solid rgba(0, 245, 212, 0.15)"
+808:             }}>
+809:               <p style={{
+810:                 fontSize: 18, 
+811:                 lineHeight: 1.7, 
+812:                 color: "white",
+813:                 margin: 0, 
+814:                 fontWeight: 600,
+815:                 letterSpacing: '-0.3px'
+816:               }}>
+817:                 <TypewriterText text={question} />
+818:               </p>
+819:             </div>
+820:           )}
