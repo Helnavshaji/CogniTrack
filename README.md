@@ -1,28 +1,20 @@
 # CogniTrack 🧠
 
-CogniTrack is an AI-powered cognitive health monitor and daily conversational companion. Designed as a friendly check-in assistant named **Alex**, the app conducts short, 4-question voice check-ins, extracts vocal and text biomarkers (speech pace, topic coherence, emotional valence, vocabulary richness), and generates a warm, personalized report filled with actionable advice, daily goals, and friendly reminders.
+CogniTrack is an AI-powered cognitive health monitor and daily conversational companion. Designed as a friendly check-in assistant named **Alex**, the website conducts short, 4-question voice check-ins, extracts vocal and text biomarkers (speech pace, topic coherence, emotional valence, vocabulary richness), and generates a warm, personalized report filled with actionable advice, daily goals, and friendly reminders.
 
 ---
 
-## 📸 App Screenshots
+## 📸 Website Screenshot
 
-### 1. Main Daily Check-in & Interactive Mascot
-Engage in a daily voice session with Alex, an interactive 2D animated mascot that reacts, tilts, and changes postures based on your vocal responses and tone.
-![Daily voice check-in screen](screenshots/media__1780414288393.png)
-
-### 2. Collapsible Session Insights & Reports
-Once a session is complete, review your personal mind insights, daily goals, and friend advice in beautiful, glowing collapsible cards.
-![Collapsible check-in insights report](screenshots/media__1780285793514.png)
-
-### 3. Multivariate Trends Dashboard
-Track your cognitive health statistics (speaking pace, logical coherence, and emotional valence) across check-in sessions over time.
-![Multivariate trends chart](screenshots/media__1780285033627.png)
+### CogniTrack Interface
+Interactive voice check-in website with collapsible history logs and custom chat interface.
+![CogniTrack Website Interface](screenshots/screenshot.png)
 
 ---
 
 ## 🌟 Key Features
 
-*   **🎙️ Interactive Voice Check-in**: A conversational AI interface equipped with a responsive 2D SVG companion mascot that reacts and tilts its head based on whether it is listening, thinking, speaking, or comfort-hugging.
+*   **🎙️ Interactive Voice Check-in**: A conversational voice interface equipped with a responsive 2D SVG companion mascot that reacts and tilts its head based on whether it is listening, thinking, speaking, or comfort-hugging.
 *   **📝 Best Friend Reports**: Generates a warm WhatsApp-style personal message at the end of each 4-question conversation containing:
     *   💬 *How you seemed today* (Warm summaries referencing your words)
     *   🌟 *What I noticed about you* (Positive reinforcement)
@@ -38,7 +30,7 @@ Track your cognitive health statistics (speaking pace, logical coherence, and em
 ## 🛠️ Technology Stack
 
 ### Frontend (Client)
-*   **Vite + React**: Core frontend skeleton.
+*   **Vite + React**: Core website skeleton.
 *   **React Router**: Navigation routing between active check-ins and trends.
 *   **Recharts**: Visualizes multivariate biomarker charts.
 *   **Axios**: Manages HTTP communications with the backend API.
