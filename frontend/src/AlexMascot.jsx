@@ -1,17 +1,6 @@
 import React from 'react'
 
 export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
-  const isListening = state === "listening"
-  const isThinking = state === "thinking"
-  const isSpeaking = state === "speaking"
-  const isComforting = state === "comforting"
-
-  // Base state classes for animations
-  let characterClass = "mascot-idle"
-  if (isSpeaking) characterClass = "mascot-speaking"
-  if (isThinking) characterClass = "mascot-thinking"
-  if (isListening) characterClass = "mascot-listening"
-
   return (
     <div style={{
       position: 'relative',
@@ -22,38 +11,13 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
       justifyContent: 'center',
       ...style
     }}>
-      {/* Particle Overlay (Hearts or Stars) */}
-      {isComforting && (
-        <div className="char-overlay">
-          <span className="part-heart h-1">❤️</span>
-          <span className="part-heart h-2">💖</span>
-          <span className="part-heart h-3">🤗</span>
-        </div>
-      )}
-      {isThinking && (
-        <div className="char-overlay">
-          <span className="part-star st-1">⭐</span>
-          <span className="part-star st-2">✨</span>
-          <span className="part-star st-3">🌟</span>
-        </div>
-      )}
-      {isListening && (
-        <div className="char-overlay">
-          <span className="part-zzz p-1">🎵</span>
-          <span className="part-zzz p-2">👂</span>
-        </div>
-      )}
-
-      {/* SVG Canvas */}
+      {/* SVG Canvas representing a still 3D-style Clay Mascot */}
       <svg
         width="100%"
         height="100%"
         viewBox="0 0 100 100"
         style={{
-          overflow: 'visible',
-          transition: 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-          transform: isListening ? 'rotate(6deg) scale(1.05)' : isThinking ? 'rotate(-3deg)' : 'none',
-          animation: isSpeaking ? 'breathe 1s infinite ease-in-out' : 'breathe 3s infinite ease-in-out'
+          overflow: 'visible'
         }}
       >
         <defs>
@@ -107,11 +71,8 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
         <circle cx="41" cy="83" r="2" fill="url(#hoodieEdge)" />
         <circle cx="59" cy="83" r="2" fill="url(#hoodieEdge)" />
 
-        {/* Head and Hood Outer Rim */}
-        <g style={{
-          transformOrigin: '50px 50px',
-          animation: isThinking ? 'tilt-head 2.5s infinite ease-in-out' : 'nod-head 4s infinite ease-in-out'
-        }}>
+        {/* Head and Hood Outer Rim (Still, no animations) */}
+        <g style={{ transformOrigin: '50px 50px' }}>
           {/* Outer Hood */}
           <circle cx="50" cy="46" r="23" fill="url(#hoodieBody)" stroke="#FFFFFF" strokeWidth="1.5" />
 
@@ -124,49 +85,22 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
           {/* Hair details */}
           <path d="M 40,29 Q 50,22 60,29 Q 50,26 40,29 Z" fill="#875FFF" opacity="0.3" />
 
-          {/* EYES */}
-          {isListening ? (
-            // Curved attentive/wink eyes
-            <g>
-              <path d="M 39,46 C 41,43 45,43 47,46" fill="none" stroke="#2C2C4E" strokeWidth="3" strokeLinecap="round" />
-              <path d="M 53,46 C 55,43 59,43 61,46" fill="none" stroke="#2C2C4E" strokeWidth="3" strokeLinecap="round" />
-            </g>
-          ) : isComforting ? (
-            // Smiling eyes ^ ^
-            <g>
-              <path d="M 38,47 Q 42,42 46,47" fill="none" stroke="#2C2C4E" strokeWidth="3" strokeLinecap="round" />
-              <path d="M 54,47 Q 58,42 62,47" fill="none" stroke="#2C2C4E" strokeWidth="3" strokeLinecap="round" />
-            </g>
-          ) : (
-            // Standard blinking eyes
-            <g style={{ animation: 'blink 5s infinite' }}>
-              {/* Left eye */}
-              <circle cx="42" cy="46" r="3" fill="#2C2C4E" />
-              <circle cx="43.2" cy="44.8" r="0.9" fill="#FFFFFF" />
-              {/* Right eye */}
-              <circle cx="58" cy="46" r="3" fill="#2C2C4E" />
-              <circle cx="59.2" cy="44.8" r="0.9" fill="#FFFFFF" />
-            </g>
-          )}
+          {/* EYES (Still, friendly eyes with standard high-lights) */}
+          <g>
+            {/* Left eye */}
+            <circle cx="42" cy="46" r="3" fill="#2C2C4E" />
+            <circle cx="43.2" cy="44.8" r="0.9" fill="#FFFFFF" />
+            {/* Right eye */}
+            <circle cx="58" cy="46" r="3" fill="#2C2C4E" />
+            <circle cx="59.2" cy="44.8" r="0.9" fill="#FFFFFF" />
+          </g>
 
           {/* Blushing cheeks */}
           <circle cx="37" cy="52" r="4" fill="url(#blushGrad)" pointerEvents="none" />
           <circle cx="63" cy="52" r="4" fill="url(#blushGrad)" pointerEvents="none" />
 
-          {/* MOUTH */}
-          {isSpeaking ? (
-            // Vertically scaling open mouth
-            <ellipse cx="50" cy="54" rx="2.5" ry="3.5" fill="#2C2C4E" style={{ animation: 'speak 0.4s infinite alternate' }} />
-          ) : isComforting ? (
-            // Sweet open smile
-            <path d="M 45,52 Q 50,58 55,52 Z" fill="#2C2C4E" />
-          ) : isListening ? (
-            // Attentive circle o-mouth
-            <circle cx="50" cy="54" r="2" fill="#2C2C4E" />
-          ) : (
-            // Standard smile
-            <path d="M 46,52 Q 50,55 54,52" fill="none" stroke="#2C2C4E" strokeWidth="2" strokeLinecap="round" />
-          )}
+          {/* MOUTH (Cute stationary smile) */}
+          <path d="M 46,52 Q 50,55 54,52" fill="none" stroke="#2C2C4E" strokeWidth="2" strokeLinecap="round" />
         </g>
       </svg>
     </div>

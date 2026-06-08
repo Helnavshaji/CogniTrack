@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Caveat:wght@400;700&family=League+Script&display=swap');
 
 :root {
   --bg-light: #F6F0FF;
@@ -19,7 +19,7 @@
   --border-glass: rgba(255, 255, 255, 0.7);
   
   --font-heading: 'Poppins', system-ui, sans-serif;
-  --font-body: 'Inter', system-ui, sans-serif;
+  --font-body: 'Caveat', 'League Script', cursive;
 }
 
 * {
@@ -193,70 +193,9 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: translateX(calc(100vw + 300px)); }
 }
 
-/* Mascot SVG Keyframe Animations */
-@keyframes blink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
-}
 
-@keyframes speak {
-  0% { transform: scaleY(0.2); }
-  100% { transform: scaleY(1.4); }
-}
+/* Mascot Animations Cleaned Up (Static Clay Model) */
 
-@keyframes pulse {
-  0% { transform: scale(0.96); box-shadow: 0 0 10px rgba(157, 123, 255, 0.2); }
-  50% { transform: scale(1.04); box-shadow: 0 0 25px rgba(157, 123, 255, 0.5); }
-  100% { transform: scale(0.96); box-shadow: 0 0 10px rgba(157, 123, 255, 0.2); }
-}
-
-@keyframes nod-head {
-  0%, 100% { transform: translateY(0) rotate(0deg); }
-  50% { transform: translateY(1.5px) rotate(0.8deg); }
-}
-
-@keyframes tilt-head {
-  0%, 100% { transform: rotate(0deg) translateY(0); }
-  33% { transform: rotate(-3deg) translateY(-0.5px); }
-  66% { transform: rotate(3deg) translateY(0.5px); }
-}
-
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scaleY(1.025) translateY(-1px); }
-}
-
-.char-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.part-zzz, .part-heart, .part-kiss, .part-star, .part-smile {
-  position: absolute;
-  font-size: 16px;
-  animation: float-up-fade 2.2s infinite ease-out;
-  opacity: 0;
-}
-
-.part-zzz.p-1 { left: 75%; top: 40%; animation-delay: 0s; }
-.part-zzz.p-2 { left: 80%; top: 30%; animation-delay: 0.7s; font-size: 20px; }
-.part-zzz.p-3 { left: 85%; top: 20%; animation-delay: 1.4s; font-size: 24px; }
-
-.part-heart.h-1 { left: 20%; top: 35%; animation-delay: 0s; }
-.part-heart.h-2 { right: 20%; top: 30%; animation-delay: 0.8s; }
-.part-heart.h-3 { left: 45%; top: 12%; animation-delay: 1.6s; }
-
-.part-star.st-1 { left: 15%; top: 40%; animation-delay: 0s; }
-.part-star.st-2 { right: 15%; top: 35%; animation-delay: 0.7s; }
-.part-star.st-3 { left: 48%; top: 10%; animation-delay: 1.4s; }
-
-@keyframes float-up-fade {
-  0% { transform: translateY(15px) scale(0.6); opacity: 0; }
-  20% { opacity: 0.95; }
-  100% { transform: translateY(-40px) scale(1.15); opacity: 0; }
-}
 
 /* Mic pulse ring */
 .audio-wave-ring {

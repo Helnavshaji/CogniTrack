@@ -480,25 +480,7 @@ export default function Checkin({ userId, onRefreshHistory, currentUser = "helna
             </div>
           )}
 
-          {/* Last user statement */}
-          {lastTranscript && state === "question" && (
-            <div style={{
-              backgroundColor: "var(--cream)",
-              borderRadius: 20, 
-              padding: "14px 20px", 
-              width: '90%',
-              fontSize: '0.82rem',
-              color: "var(--text-primary)", 
-              lineHeight: 1.5,
-              border: "2px dashed #BFA2FF",
-              textAlign: 'left'
-            }}>
-              <div style={{ fontSize: '0.62rem', color: "var(--secondary-purple)", marginBottom: 4, fontWeight: 800, letterSpacing: '0.8px' }}>
-                YOU SAID
-              </div>
-              "{lastTranscript}"
-            </div>
-          )}
+
 
           {/* Mic trigger and waveform animations */}
           {state === "question" && (

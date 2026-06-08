@@ -487,21 +487,94 @@ export default function App() {
     return sessionStorage.getItem('username') || 'helna'
   })
   
+  // Auth states
+  const [authMode, setAuthMode] = useState("login") // 'login' or 'register'
   const [usernameInput, setUsernameInput] = useState("")
+  const [passwordInput, setPasswordInput] = useState("")
+  const [confirmPasswordInput, setConfirmPasswordInput] = useState("")
+  const [authError, setAuthError] = useState("")
+  const [authSuccess, setAuthSuccess] = useState("")
 
-  const handleLogin = (e) => {
+  // Fetch local users list
+  const getUsers = () => {
+    const users = localStorage.getItem('cognitrack_users')
+    if (!users) {
+      const initialUsers = { "helna": "password123" }
+      localStorage.setItem('cognitrack_users', JSON.stringify(initialUsers))
+      return initialUsers
+    }
+    try {
+      return JSON.parse(users)
+    } catch (e) {
+      return {}
+    }
+  }
+
+  const handleAuthSubmit = (e) => {
     e.preventDefault()
-    const name = usernameInput.trim() || 'helna'
-    setIsLoggedIn(true)
-    setCurrentUser(name)
-    sessionStorage.setItem('isLoggedIn', 'true')
-    sessionStorage.setItem('username', name)
+    setAuthError("")
+    setAuthSuccess("")
+
+    const username = usernameInput.trim()
+    const password = passwordInput
+
+    if (!username || !password) {
+      setAuthError("Please fill in all fields!")
+      return
+    }
+
+    const users = getUsers()
+
+    if (authMode === "login") {
+      const existingPassword = users[username.toLowerCase()]
+      if (!existingPassword) {
+        setAuthError("User does not exist. Please create an account!")
+        return
+      }
+      if (existingPassword !== password) {
+        setAuthError("Incorrect password!")
+        return
+      }
+
+      // Successful Login
+      setIsLoggedIn(true)
+      setCurrentUser(username)
+      sessionStorage.setItem('isLoggedIn', 'true')
+      sessionStorage.setItem('username', username)
+    } else {
+      if (users[username.toLowerCase()]) {
+        setAuthError("Username already exists!")
+        return
+      }
+      if (password !== confirmPasswordInput) {
+        setAuthError("Passwords do not match!")
+        return
+      }
+
+      // Successful Registration
+      users[username.toLowerCase()] = password
+      localStorage.setItem('cognitrack_users', JSON.stringify(users))
+
+      setAuthSuccess("Account created successfully! Logging you in...")
+      
+      setTimeout(() => {
+        setIsLoggedIn(true)
+        setCurrentUser(username)
+        sessionStorage.setItem('isLoggedIn', 'true')
+        sessionStorage.setItem('username', username)
+      }, 1000)
+    }
   }
 
   const handleSignOut = () => {
     setIsLoggedIn(false)
     sessionStorage.removeItem('isLoggedIn')
     sessionStorage.removeItem('username')
+    setAuthError("")
+    setAuthSuccess("")
+    setUsernameInput("")
+    setPasswordInput("")
+    setConfirmPasswordInput("")
   }
 
   // WELCOME SCREEN (Auth layout matching Apple/Duolingo clay style)
@@ -549,7 +622,7 @@ export default function App() {
         }}>
           {/* Mascot Header */}
           <div style={{ marginBottom: 20 }}>
-            <AlexMascot size={110} state="speaking" />
+            <AlexMascot size={110} />
           </div>
 
           <h2 style={{
@@ -559,7 +632,7 @@ export default function App() {
             marginBottom: 8,
             fontFamily: 'var(--font-heading)'
           }}>
-            Welcome Back!
+            {authMode === "login" ? "Welcome Back!" : "Join Us!"}
           </h2>
           <p style={{
             fontSize: '0.85rem',
@@ -568,13 +641,45 @@ export default function App() {
             marginBottom: 30,
             padding: '0 10px'
           }}>
-            Sign in to start your friendly Daily Voice Check-in with Alex.
+            {authMode === "login" 
+              ? "Sign in to start your friendly Daily Voice Check-in with Alex."
+              : "Create an account to start your cognitive and mental health monitoring journey."}
           </p>
 
-          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <form onSubmit={handleAuthSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {authError && (
+              <div style={{
+                backgroundColor: 'var(--soft-pink)',
+                color: '#b71c1c',
+                padding: '12px',
+                borderRadius: '16px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                border: '2px solid #FFD6E7',
+                textAlign: 'center'
+              }}>
+                ⚠️ {authError}
+              </div>
+            )}
+            
+            {authSuccess && (
+              <div style={{
+                backgroundColor: 'var(--soft-green)',
+                color: '#1b5e20',
+                padding: '12px',
+                borderRadius: '16px',
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                border: '2px solid #D8F5D0',
+                textAlign: 'center'
+              }}>
+                🎉 {authSuccess}
+              </div>
+            )}
+
             <div style={{ textAlign: 'left' }}>
               <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
-                What's your name?
+                Username
               </label>
               <input 
                 type="text" 
@@ -586,17 +691,75 @@ export default function App() {
               />
             </div>
 
+            <div style={{ textAlign: 'left' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
+                Password
+              </label>
+              <input 
+                type="password" 
+                className="clay-input"
+                placeholder="••••••••"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                required
+              />
+            </div>
+
+            {authMode === "register" && (
+              <div style={{ textAlign: 'left' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
+                  Confirm Password
+                </label>
+                <input 
+                  type="password" 
+                  className="clay-input"
+                  placeholder="••••••••"
+                  value={confirmPasswordInput}
+                  onChange={(e) => setConfirmPasswordInput(e.target.value)}
+                  required
+                />
+              </div>
+            )}
+
             <button 
               type="submit" 
               className="clay-btn-cta"
               style={{ width: '100%', padding: '16px', fontSize: '1rem', marginTop: 10 }}
             >
-              Sign In ⚡
+              {authMode === "login" ? "Sign In ⚡" : "Create Account ✨"}
             </button>
           </form>
 
           <div style={{ display: 'flex', justifyContent: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 24, fontWeight: 600 }}>
-            Don't have an account? <span style={{ color: 'var(--secondary-purple)', cursor: 'pointer' }}>Register locally</span>
+            {authMode === "login" ? (
+              <>
+                Don't have an account?{" "}
+                <span 
+                  onClick={() => {
+                    setAuthMode("register");
+                    setAuthError("");
+                    setAuthSuccess("");
+                  }} 
+                  style={{ color: 'var(--secondary-purple)', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Create Account
+                </span>
+              </>
+            ) : (
+              <>
+                Already have an account?{" "}
+                <span 
+                  onClick={() => {
+                    setAuthMode("login");
+                    setAuthError("");
+                    setAuthSuccess("");
+                  }} 
+                  style={{ color: 'var(--secondary-purple)', cursor: 'pointer', textDecoration: 'underline' }}
+                >
+                  Sign In
+                </span>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -605,7 +768,7 @@ export default function App() {
 
   return (
     <Router>
-      <MainLayout userId="user_001" currentUser={currentUser} onSignOut={handleSignOut} />
+      <MainLayout userId={currentUser.toLowerCase()} currentUser={currentUser} onSignOut={handleSignOut} />
     </Router>
   )
 }
