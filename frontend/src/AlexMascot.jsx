@@ -1,6 +1,68 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 
 export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
+  const isListening = state === "listening"
+  const isThinking = state === "thinking"
+  const isSpeaking = state === "speaking"
+  const isComforting = state === "comforting"
+
+  // Render floating particle overlays using Framer Motion for maximum performance and smoothness
+  const renderParticles = () => {
+    // Generate a set of particles based on state
+    let baseList = ["✨", "⭐", "✨", "⭐"] // Ambient particles
+    if (isComforting) {
+      baseList = ["❤️", "💖", "💜", "💕", "✨", "⭐"]
+    } else if (isThinking) {
+      baseList = ["⭐", "🌟", "✨", "⭐", "🌟", "✨"]
+    } else if (isListening) {
+      baseList = ["🎵", "✨", "🎵", "✨", "⭐", "✨"]
+    } else if (isSpeaking) {
+      baseList = ["✨", "⭐", "✨", "⭐", "✨", "💬"]
+    }
+
+    return (
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 10 }}>
+        {baseList.map((emojiItem, idx) => {
+          // Staggered delays and unique paths
+          const delay = idx * 0.4
+          const leftPositions = [15, 80, 45, 25, 65, 35]
+          const left = leftPositions[idx % leftPositions.length]
+          
+          return (
+            <motion.span
+              key={idx}
+              initial={{ y: 25, x: 0, opacity: 0, scale: 0.4, rotate: 0 }}
+              animate={{
+                y: -60,
+                x: [0, (idx % 2 === 0 ? 12 : -12), (idx % 2 === 0 ? -6 : 6), 0],
+                opacity: [0, 0.9, 0.9, 0],
+                scale: [0.5, 1.1, 1.1, 0.6],
+                rotate: [0, idx % 2 === 0 ? 90 : -90, idx % 2 === 0 ? 180 : -180, idx % 2 === 0 ? 360 : -360]
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                delay: delay,
+                ease: "easeInOut"
+              }}
+              style={{
+                position: 'absolute',
+                left: `${left}%`,
+                top: '30%',
+                fontSize: emojiItem === "💬" || emojiItem === "🎵" ? '0.9rem' : '1.1rem',
+                display: 'inline-block',
+                filter: 'drop-shadow(0 2px 4px rgba(157, 123, 255, 0.15))'
+              }}
+            >
+              {emojiItem}
+            </motion.span>
+          )
+        })}
+      </div>
+    )
+  }
+
   return (
     <div style={{
       position: 'relative',
@@ -11,13 +73,28 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
       justifyContent: 'center',
       ...style
     }}>
-      {/* SVG Canvas representing a still 3D-style Clay Mascot */}
-      <svg
+      {/* Particle Overlays */}
+      {renderParticles()}
+
+      {/* SVG Canvas with soft breathing and bounce animations */}
+      <motion.svg
         width="100%"
         height="100%"
         viewBox="0 0 100 100"
         style={{
-          overflow: 'visible'
+          overflow: 'visible',
+        }}
+        animate={{
+          y: isSpeaking ? [0, -2, 0] : [0, -1.5, 0],
+          scaleY: [1, 1.018, 1],
+          scaleX: [1, 1.008, 1],
+          rotate: isListening ? 5 : isThinking ? -3 : 0
+        }}
+        transition={{
+          y: { repeat: Infinity, duration: isSpeaking ? 1.4 : 3.2, ease: "easeInOut" },
+          scaleY: { repeat: Infinity, duration: isSpeaking ? 1.4 : 3.2, ease: "easeInOut" },
+          scaleX: { repeat: Infinity, duration: isSpeaking ? 1.4 : 3.2, ease: "easeInOut" },
+          rotate: { type: "spring", stiffness: 100, damping: 12 }
         }}
       >
         <defs>
@@ -71,8 +148,22 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
         <circle cx="41" cy="83" r="2" fill="url(#hoodieEdge)" />
         <circle cx="59" cy="83" r="2" fill="url(#hoodieEdge)" />
 
-        {/* Head and Hood Outer Rim (Still, no animations) */}
-        <g style={{ transformOrigin: '50px 50px' }}>
+        {/* Head and Hood Outer Rim */}
+        <motion.g 
+          style={{ transformOrigin: '50px 50px' }}
+          animate={isListening || isThinking ? {
+            rotate: [0, 2.5, -2.5, 0],
+            y: [0, 0.5, -0.5, 0]
+          } : {
+            rotate: 0,
+            y: 0
+          }}
+          transition={{
+            repeat: Infinity,
+            duration: 3,
+            ease: "easeInOut"
+          }}
+        >
           {/* Outer Hood */}
           <circle cx="50" cy="46" r="23" fill="url(#hoodieBody)" stroke="#FFFFFF" strokeWidth="1.5" />
 
@@ -85,24 +176,86 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
           {/* Hair details */}
           <path d="M 40,29 Q 50,22 60,29 Q 50,26 40,29 Z" fill="#875FFF" opacity="0.3" />
 
-          {/* EYES (Still, friendly eyes with standard high-lights) */}
-          <g>
+          {/* EYES (Framer Motion Blinking animation) */}
+          <motion.g 
+            style={{ transformOrigin: '50px 46px' }}
+            animate={{
+              scaleY: [1, 1, 1, 0.1, 1, 1]
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 4.5,
+              times: [0, 0.9, 0.93, 0.96, 0.98, 1],
+              ease: "easeInOut"
+            }}
+          >
             {/* Left eye */}
             <circle cx="42" cy="46" r="3" fill="#2C2C4E" />
             <circle cx="43.2" cy="44.8" r="0.9" fill="#FFFFFF" />
             {/* Right eye */}
             <circle cx="58" cy="46" r="3" fill="#2C2C4E" />
             <circle cx="59.2" cy="44.8" r="0.9" fill="#FFFFFF" />
-          </g>
+          </motion.g>
 
           {/* Blushing cheeks */}
-          <circle cx="37" cy="52" r="4" fill="url(#blushGrad)" pointerEvents="none" />
-          <circle cx="63" cy="52" r="4" fill="url(#blushGrad)" pointerEvents="none" />
+          <motion.circle 
+            cx="37" 
+            cy="52" 
+            r="4" 
+            fill="url(#blushGrad)" 
+            pointerEvents="none" 
+            animate={{
+              scale: isComforting ? [1, 1.2, 1] : 1,
+              opacity: isComforting ? [0.8, 1, 0.8] : 0.8
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 2.0,
+              ease: "easeInOut"
+            }}
+          />
+          <motion.circle 
+            cx="63" 
+            cy="52" 
+            r="4" 
+            fill="url(#blushGrad)" 
+            pointerEvents="none" 
+            animate={{
+              scale: isComforting ? [1, 1.2, 1] : 1,
+              opacity: isComforting ? [0.8, 1, 0.8] : 0.8
+            }}
+            transition={{
+              repeat: Infinity,
+              duration: 2.0,
+              ease: "easeInOut"
+            }}
+          />
 
-          {/* MOUTH (Cute stationary smile) */}
-          <path d="M 46,52 Q 50,55 54,52" fill="none" stroke="#2C2C4E" strokeWidth="2" strokeLinecap="round" />
-        </g>
-      </svg>
+          {/* MOUTH */}
+          {isSpeaking ? (
+            // Speaking mouth vertically scaling
+            <motion.ellipse 
+              cx="50" 
+              cy="54" 
+              rx="2" 
+              ry="3.5" 
+              fill="#2C2C4E" 
+              style={{ transformOrigin: '50px 54px' }}
+              animate={{
+                scaleY: [0.4, 1.3, 0.4]
+              }}
+              transition={{
+                repeat: Infinity,
+                duration: 0.4,
+                ease: "easeInOut"
+              }}
+            />
+          ) : (
+            // Warm Smile
+            <path d="M 46,52 Q 50,55 54,52" fill="none" stroke="#2C2C4E" strokeWidth="2" strokeLinecap="round" />
+          )}
+        </motion.g>
+      </motion.svg>
     </div>
   )
 }

@@ -45,25 +45,55 @@ async def start_session(user_id: str, db: DBSession = Depends(get_db)):
 
 @app.post("/session/respond")
 async def process_response(
-    audio: UploadFile = File(...),
+    audio: UploadFile = File(None),
     session_id: str = Form(...),
     user_id: str = Form(...),
     question: str = Form(...),
     history: str = Form(default="[]"),
+    text_response: str = Form(default=None),
     db: DBSession = Depends(get_db)
 ):
-    # 1. Save audio
-    audio_bytes = await audio.read()
-    audio_path = save_audio_file(audio_bytes, user_id)
+    if text_response is not None:
+        # User typed a direct response
+        transcript_text = text_response.strip()
+        audio_path = ""
+        try:
+            print(f"\n>>> User typed: {transcript_text}")
+        except Exception:
+            pass
 
-    # 2. Transcribe
-    transcript_data = transcribe_audio(audio_path)
-    transcript_text = transcript_data["text"]
-    print(f"\n>>> User said: {transcript_text}")
+        # Default acoustic features for typed text checkin
+        acoustic_features = {
+            "speech_rate_wpm": 0.0,
+            "pause_count": 0,
+            "mean_pause_duration_s": 0.0,
+            "max_pause_s": 0.0,
+            "pause_ratio": 0.0,
+            "energy_mean": 0.0,
+            "energy_variability": 0.0,
+            "pitch_mean_hz": 0.0,
+            "pitch_variability": 0.0,
+            "total_duration_s": 0.0
+        }
+    else:
+        # User spoke a voice response
+        # 1. Save audio
+        audio_bytes = await audio.read()
+        audio_path = save_audio_file(audio_bytes, user_id)
 
-    # 3. Extract biomarkers
+        # 2. Transcribe
+        transcript_data = transcribe_audio(audio_path)
+        transcript_text = transcript_data["text"]
+        try:
+            print(f"\n>>> User said: {transcript_text}")
+        except Exception:
+            pass
+
+        # 3. Extract acoustic features
+        acoustic_features = extract_audio_features(audio_path, transcript_data["words"])
+
+    # 3. Extract linguistic biomarkers
     text_biomarkers = extract_linguistic_biomarkers(transcript_text)
-    acoustic_features = extract_audio_features(audio_path, transcript_data["words"])
     all_features = {**text_biomarkers, **acoustic_features}
 
     # 4. AI analysis

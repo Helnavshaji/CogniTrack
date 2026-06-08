@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useNavigate } from "react-router-dom"
+import { motion, AnimatePresence } from "framer-motion"
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from "recharts"
 import AlexMascot from "./AlexMascot"
 
@@ -51,9 +52,18 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
   }))
 
   const renderCharts = () => (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginTop: 10 }}>
+    <motion.div 
+      initial={{ opacity: 0, y: 24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: "spring", stiffness: 140, damping: 22 }}
+      style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 24, marginTop: 10 }}
+    >
       {/* 1. Speech Rate Trend */}
-      <div className="clay-card" style={{ padding: 20, background: 'white', height: 260 }}>
+      <motion.div 
+        className="clay-card" 
+        whileHover={{ y: -6, scale: 1.015, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.1)" }}
+        style={{ padding: 20, background: 'white', height: 260 }}
+      >
         <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 14 }}>🗣️ Speech Pace (WPM)</h4>
         <ResponsiveContainer width="100%" height="85%">
           <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
@@ -64,10 +74,14 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             <Line type="monotone" dataKey="speech_rate_wpm" stroke="var(--secondary-purple)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 7 }} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </motion.div>
 
       {/* 2. Emotional Valence Trend */}
-      <div className="clay-card" style={{ padding: 20, background: 'white', height: 260 }}>
+      <motion.div 
+        className="clay-card" 
+        whileHover={{ y: -6, scale: 1.015, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.1)" }}
+        style={{ padding: 20, background: 'white', height: 260 }}
+      >
         <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 14 }}>😊 Emotional Valence (-1 to 1)</h4>
         <ResponsiveContainer width="100%" height="85%">
           <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
@@ -78,10 +92,14 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             <Line type="monotone" dataKey="emotional_valence" stroke="var(--accent-pink)" strokeWidth={3} dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </motion.div>
 
       {/* 3. Semantic Coherence Trend */}
-      <div className="clay-card" style={{ padding: 20, background: 'white', height: 260 }}>
+      <motion.div 
+        className="clay-card" 
+        whileHover={{ y: -6, scale: 1.015, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.1)" }}
+        style={{ padding: 20, background: 'white', height: 260 }}
+      >
         <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 14 }}>🧩 Topic Coherence (%)</h4>
         <ResponsiveContainer width="100%" height="85%">
           <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
@@ -92,10 +110,14 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             <Line type="monotone" dataKey="semantic_coherence" stroke="#00f5d4" strokeWidth={3} dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </motion.div>
 
       {/* 4. Vocabulary Richness Trend */}
-      <div className="clay-card" style={{ padding: 20, background: 'white', height: 260 }}>
+      <motion.div 
+        className="clay-card" 
+        whileHover={{ y: -6, scale: 1.015, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.1)" }}
+        style={{ padding: 20, background: 'white', height: 260 }}
+      >
         <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 14 }}>🌸 Lexical Richness (TTR)</h4>
         <ResponsiveContainer width="100%" height="85%">
           <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
@@ -106,10 +128,14 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             <Line type="monotone" dataKey="type_token_ratio" stroke="#ff9f1c" strokeWidth={3} dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
+      </motion.div>
 
       {/* 5. Energy Variability Trend */}
-      <div className="clay-card" style={{ padding: 20, background: 'white', height: 260 }}>
+      <motion.div 
+        className="clay-card" 
+        whileHover={{ y: -6, scale: 1.015, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.1)" }}
+        style={{ padding: 20, background: 'white', height: 260 }}
+      >
         <h4 style={{ fontSize: '0.9rem', color: 'var(--text-primary)', marginBottom: 14 }}>⚡ Vocal Energy Variability</h4>
         <ResponsiveContainer width="100%" height="85%">
           <LineChart data={chartData} margin={{ top: 5, right: 10, left: -25, bottom: 5 }}>
@@ -120,8 +146,8 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             <Line type="monotone" dataKey="energy_variability" stroke="#39ff14" strokeWidth={3} dot={{ r: 4 }} />
           </LineChart>
         </ResponsiveContainer>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 
   if (onlyCharts) {
@@ -139,18 +165,37 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
     <div style={{ display: 'flex', flexDirection: 'column', gap: 30, paddingBottom: 40 }}>
       
       {/* 1. HERO CHECK-IN BANNER */}
-      <div className="clay-card" style={{
-        padding: '36px 40px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 32,
-        background: 'white',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <motion.div 
+        className="clay-card"
+        initial={{ opacity: 0, y: 30, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", stiffness: 180, damping: 20 }}
+        whileHover={{ y: -6, boxShadow: "0 22px 35px rgba(157, 123, 255, 0.12)" }}
+        style={{
+          padding: '36px 40px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 32,
+          background: 'white',
+          position: 'relative',
+          overflow: 'hidden'
+        }}
+      >
         {/* Sparkles icons on right */}
-        <div style={{ position: 'absolute', right: 30, bottom: 25, opacity: 0.6, fontSize: '2rem' }}>✨</div>
-        <div style={{ position: 'absolute', right: 70, top: 25, opacity: 0.4, fontSize: '1.2rem' }}>⭐</div>
+        <motion.div 
+          animate={{ rotate: 360, scale: [1, 1.15, 1] }} 
+          transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
+          style={{ position: 'absolute', right: 30, bottom: 25, opacity: 0.6, fontSize: '2rem', pointerEvents: 'none' }}
+        >
+          ✨
+        </motion.div>
+        <motion.div 
+          animate={{ rotate: -360, scale: [1, 1.2, 1] }} 
+          transition={{ repeat: Infinity, duration: 5, ease: "linear" }}
+          style={{ position: 'absolute', right: 70, top: 25, opacity: 0.4, fontSize: '1.2rem', pointerEvents: 'none' }}
+        >
+          ⭐
+        </motion.div>
         
         <AlexMascot size={120} state="idle" />
         
@@ -167,15 +212,17 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             How has your energy and emotional balance been feeling? Let's take four quick conversational steps together to check in on your wellness.
           </p>
           <div>
-            <button 
+            <motion.button 
               onClick={() => navigate('/checkin')}
               className="clay-btn-cta"
+              whileHover={{ y: 2, borderBottomWidth: "2px", boxShadow: "0 4px 10px rgba(157, 123, 255, 0.15)" }}
+              whileTap={{ y: 5, borderBottomWidth: "0px", scale: 0.98 }}
             >
               Start Today's Check-In <span style={{ fontSize: '1.1rem' }}>→</span>
-            </button>
+            </motion.button>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* 2. FIVE COLORED STATS CARDS */}
       <div style={{
@@ -184,86 +231,146 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
         gap: 16
       }}>
         {/* Check-ins card */}
-        <div className="clay-card" style={{ 
-          padding: '24px 20px', 
-          backgroundColor: '#EBF8FF', 
-          border: '3px solid #FFFFFF',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 6
-        }}>
+        <motion.div 
+          className="clay-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: [0, -5, 0] }}
+          transition={{
+            opacity: { duration: 0.4, delay: 0.0 },
+            y: { repeat: Infinity, duration: 5.2, ease: "easeInOut", delay: 0.0 }
+          }}
+          whileHover={{ y: -9, scale: 1.03, boxShadow: "0 15px 25px rgba(157, 123, 255, 0.08)" }}
+          whileTap={{ scale: 0.97 }}
+          style={{ 
+            padding: '24px 20px', 
+            backgroundColor: '#EBF8FF', 
+            border: '3px solid #FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: 6,
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>📅</div>
           <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#2B6CB0', letterSpacing: '0.5px' }}>CHECK-INS</span>
           <strong style={{ fontSize: '1.6rem', color: '#2B6CB0', fontWeight: 800 }}>{totalEntries}</strong>
           <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>Total entries</span>
-        </div>
+        </motion.div>
 
         {/* Streak card */}
-        <div className="clay-card" style={{ 
-          padding: '24px 20px', 
-          backgroundColor: '#FFFBEB', 
-          border: '3px solid #FFFFFF',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 6
-        }}>
+        <motion.div 
+          className="clay-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: [0, -5, 0] }}
+          transition={{
+            opacity: { duration: 0.4, delay: 0.1 },
+            y: { repeat: Infinity, duration: 5.6, ease: "easeInOut", delay: 0.1 }
+          }}
+          whileHover={{ y: -9, scale: 1.03, boxShadow: "0 15px 25px rgba(157, 123, 255, 0.08)" }}
+          whileTap={{ scale: 0.97 }}
+          style={{ 
+            padding: '24px 20px', 
+            backgroundColor: '#FFFBEB', 
+            border: '3px solid #FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: 6,
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>🔥</div>
           <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#D97706', letterSpacing: '0.5px' }}>STREAK</span>
           <strong style={{ fontSize: '1.6rem', color: '#D97706', fontWeight: 800 }}>{currentStreak}</strong>
           <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>Consecutive</span>
-        </div>
+        </motion.div>
 
         {/* Avg Mood card */}
-        <div className="clay-card" style={{ 
-          padding: '24px 20px', 
-          backgroundColor: '#FFF5F5', 
-          border: '3px solid #FFFFFF',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 6
-        }}>
+        <motion.div 
+          className="clay-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: [0, -5, 0] }}
+          transition={{
+            opacity: { duration: 0.4, delay: 0.2 },
+            y: { repeat: Infinity, duration: 4.8, ease: "easeInOut", delay: 0.2 }
+          }}
+          whileHover={{ y: -9, scale: 1.03, boxShadow: "0 15px 25px rgba(157, 123, 255, 0.08)" }}
+          whileTap={{ scale: 0.97 }}
+          style={{ 
+            padding: '24px 20px', 
+            backgroundColor: '#FFF5F5', 
+            border: '3px solid #FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: 6,
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>😊</div>
           <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#E53E3E', letterSpacing: '0.5px' }}>AVG MOOD</span>
           <strong style={{ fontSize: '1.15rem', color: '#E53E3E', fontWeight: 800, height: 32, display: 'flex', alignItems: 'center' }}>
             {moodVibe}
           </strong>
           <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>Frequent vibe</span>
-        </div>
+        </motion.div>
 
         {/* Completed card */}
-        <div className="clay-card" style={{ 
-          padding: '24px 20px', 
-          backgroundColor: '#F0FDF4', 
-          border: '3px solid #FFFFFF',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 6
-        }}>
+        <motion.div 
+          className="clay-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: [0, -5, 0] }}
+          transition={{
+            opacity: { duration: 0.4, delay: 0.3 },
+            y: { repeat: Infinity, duration: 5.4, ease: "easeInOut", delay: 0.3 }
+          }}
+          whileHover={{ y: -9, scale: 1.03, boxShadow: "0 15px 25px rgba(157, 123, 255, 0.08)" }}
+          whileTap={{ scale: 0.97 }}
+          style={{ 
+            padding: '24px 20px', 
+            backgroundColor: '#F0FDF4', 
+            border: '3px solid #FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: 6,
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>✅</div>
           <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#166534', letterSpacing: '0.5px' }}>COMPLETED</span>
           <strong style={{ fontSize: '1.6rem', color: '#166534', fontWeight: 800 }}>{completedCount}/7</strong>
           <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>This week</span>
-        </div>
+        </motion.div>
 
         {/* Weekly Goal card */}
-        <div className="clay-card" style={{ 
-          padding: '24px 20px', 
-          backgroundColor: '#FDF4FF', 
-          border: '3px solid #FFFFFF',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          textAlign: 'center',
-          gap: 6
-        }}>
+        <motion.div 
+          className="clay-card"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: [0, -5, 0] }}
+          transition={{
+            opacity: { duration: 0.4, delay: 0.4 },
+            y: { repeat: Infinity, duration: 5.0, ease: "easeInOut", delay: 0.4 }
+          }}
+          whileHover={{ y: -9, scale: 1.03, boxShadow: "0 15px 25px rgba(157, 123, 255, 0.08)" }}
+          whileTap={{ scale: 0.97 }}
+          style={{ 
+            padding: '24px 20px', 
+            backgroundColor: '#FDF4FF', 
+            border: '3px solid #FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            gap: 6,
+            cursor: 'pointer'
+          }}
+        >
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>📈</div>
           <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#86198F', letterSpacing: '0.5px' }}>WEEKLY GOAL</span>
           <strong style={{ fontSize: '1.6rem', color: '#86198F', fontWeight: 800 }}>{goalPercentage}%</strong>
@@ -271,7 +378,7 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
             <div style={{ width: `${goalPercentage}%`, height: '100%', backgroundColor: '#86198F', borderRadius: 10 }} />
           </div>
           <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>{totalEntries} of 7 target</span>
-        </div>
+        </motion.div>
       </div>
 
       {/* 3. RECENT JOURNAL TIMELINES */}
@@ -295,33 +402,54 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
         {sessions.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {[...sessions].reverse().slice(0, 3).map((s, idx) => (
-              <div key={idx} className="clay-card" style={{ padding: 24, background: 'white' }}>
+              <motion.div 
+                key={idx} 
+                className="clay-card"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                whileHover={{ y: -5, scale: 1.01, boxShadow: "0 15px 30px rgba(157, 123, 255, 0.1)" }}
+                style={{ padding: 24, background: 'white' }}
+              >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                   <strong style={{ color: 'var(--secondary-purple)', fontFamily: 'var(--font-heading)' }}>
                     🗓️ Check-In: {s.date}
                   </strong>
-                  <button 
+                  <motion.button 
                     onClick={() => setExpandedTimelineIdx(expandedTimelineIdx === idx ? null : idx)}
                     className="clay-btn-cta"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     style={{ padding: '6px 14px', fontSize: '0.75rem', borderBottomWidth: '3px' }}
                   >
                     {expandedTimelineIdx === idx ? "Hide Details" : "View Details"}
-                  </button>
+                  </motion.button>
                 </div>
                 
                 <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', fontStyle: 'italic', margin: 0 }}>
                   "{s.transcript && s.transcript.length > 90 ? s.transcript.substring(0, 90) + '...' : s.transcript}"
                 </p>
 
-                {expandedTimelineIdx === idx && (
-                  <div style={{ marginTop: 16, borderTop: '2px dashed var(--bg-light)', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
-                    <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>Report Preview:</strong>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-light)', padding: 14, borderRadius: 16, whiteSpace: 'pre-line', lineHeight: 1.45 }}>
-                      {s.report ? s.report.substring(0, 250) + '...' : "No detailed report text stored."}
-                    </div>
-                  </div>
-                )}
-              </div>
+                <AnimatePresence initial={false}>
+                  {expandedTimelineIdx === idx && (
+                    <motion.div
+                      key="details"
+                      initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                      animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                      exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                      transition={{ duration: 0.35, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      style={{ overflow: 'hidden' }}
+                    >
+                      <div style={{ borderTop: '2px dashed var(--bg-light)', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)' }}>Report Preview:</strong>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', background: 'var(--bg-light)', padding: 14, borderRadius: 16, whiteSpace: 'pre-line', lineHeight: 1.45 }}>
+                          {s.report ? s.report.substring(0, 250) + '...' : "No detailed report text stored."}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             ))}
           </div>
         ) : (

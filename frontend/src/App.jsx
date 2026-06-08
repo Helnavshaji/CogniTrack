@@ -1,11 +1,29 @@
 import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 import Dashboard from './Dashboard'
 import Checkin from './Checkin'
 import AlexMascot from './AlexMascot'
 
 const API = "http://localhost:8000"
+
+const PageTransition = ({ children }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 24, scale: 0.98 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    exit={{ opacity: 0, y: -24, scale: 0.98 }}
+    transition={{ 
+      type: "spring",
+      stiffness: 180,
+      damping: 24,
+      mass: 0.8
+    }}
+    style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}
+  >
+    {children}
+  </motion.div>
+)
 
 const parseReport = (reportText) => {
   if (!reportText) return []
@@ -81,12 +99,27 @@ function MainLayout({ userId, currentUser, onSignOut }) {
 
   // Fetch session history
   const fetchHistory = () => {
+    setLoading(true)
     axios.get(`${API}/history/${userId}`)
       .then(res => {
-        setSessions(res.data.sessions || [])
+        const fetchedSessions = res.data.sessions || []
+        setSessions(fetchedSessions)
+        localStorage.setItem(`cognitrack_sessions_${userId}`, JSON.stringify(fetchedSessions))
         setLoading(false)
       })
-      .catch(() => setLoading(false))
+      .catch(() => {
+        const stored = localStorage.getItem(`cognitrack_sessions_${userId}`)
+        if (stored) {
+          try {
+            setSessions(JSON.parse(stored))
+          } catch (e) {
+            setSessions([])
+          }
+        } else {
+          setSessions([])
+        }
+        setLoading(false)
+      })
   }
 
   useEffect(() => {
@@ -119,13 +152,21 @@ function MainLayout({ userId, currentUser, onSignOut }) {
       }}>
         
         {/* LOGO CARD */}
-        <div className="clay-card" style={{
-          padding: '20px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 14,
-          background: 'white'
-        }}>
+        <motion.div 
+          className="clay-card" 
+          animate={{ y: [0, -4, 0] }}
+          transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
+          whileHover={{ y: -7, scale: 1.02, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.12)" }}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            padding: '20px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 14,
+            background: 'white',
+            cursor: 'pointer'
+          }}
+        >
           <AlexMascot size={44} state="idle" />
           <div>
             <h1 style={{ 
@@ -145,16 +186,24 @@ function MainLayout({ userId, currentUser, onSignOut }) {
               Your Voice Companion
             </span>
           </div>
-        </div>
+        </motion.div>
 
         {/* COMPANION PROFILE CARD */}
-        <div className="clay-card" style={{
-          padding: '18px 24px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          background: 'white'
-        }}>
+        <motion.div 
+          className="clay-card" 
+          animate={{ y: [0, -4, 0] }}
+          transition={{ repeat: Infinity, duration: 5.5, ease: "easeInOut", delay: 0.2 }}
+          whileHover={{ y: -7, scale: 1.02, boxShadow: "0 18px 30px rgba(157, 123, 255, 0.12)" }}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            padding: '18px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 16,
+            background: 'white',
+            cursor: 'pointer'
+          }}
+        >
           <div style={{
             width: 44,
             height: 44,
@@ -185,54 +234,74 @@ function MainLayout({ userId, currentUser, onSignOut }) {
               Hello, {currentUser}!
             </h3>
           </div>
-        </div>
+        </motion.div>
 
         {/* NAVIGATION BUTTONS CARD */}
-        <div className="clay-card" style={{
-          padding: '16px 14px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          background: 'white',
-          flex: 1
-        }}>
-          <Link 
-            to="/" 
-            className={`clay-btn-nav ${location.pathname === '/' ? 'active' : ''}`}
-          >
-            <span style={{ fontSize: '1.15rem' }}>🎛️</span> Dashboard
-          </Link>
+        <motion.div 
+          className="clay-card" 
+          animate={{ y: [0, -4, 0] }}
+          transition={{ repeat: Infinity, duration: 6, ease: "easeInOut", delay: 0.4 }}
+          style={{
+            padding: '16px 14px',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 8,
+            background: 'white',
+            flex: 1
+          }}
+        >
+          <motion.div whileHover={{ x: 6, scale: 1.015 }} whileTap={{ scale: 0.98 }} style={{ width: '100%' }}>
+            <Link 
+              to="/" 
+              className={`clay-btn-nav ${location.pathname === '/' ? 'active' : ''}`}
+              style={{ width: '100%' }}
+            >
+              <span style={{ fontSize: '1.15rem' }}>🎛️</span> Dashboard
+            </Link>
+          </motion.div>
           
-          <Link 
-            to="/checkin" 
-            className={`clay-btn-nav ${location.pathname === '/checkin' ? 'active' : ''}`}
-          >
-            <span style={{ fontSize: '1.15rem' }}>🎙️</span> Daily Check-In
-          </Link>
+          <motion.div whileHover={{ x: 6, scale: 1.015 }} whileTap={{ scale: 0.98 }} style={{ width: '100%' }}>
+            <Link 
+              to="/checkin" 
+              className={`clay-btn-nav ${location.pathname === '/checkin' ? 'active' : ''}`}
+              style={{ width: '100%' }}
+            >
+              <span style={{ fontSize: '1.15rem' }}>🎙️</span> Daily Check-In
+            </Link>
+          </motion.div>
 
-          <Link 
-            to="/history" 
-            className={`clay-btn-nav ${location.pathname === '/history' ? 'active' : ''}`}
-          >
-            <span style={{ fontSize: '1.15rem' }}>🗓️</span> History Logs
-          </Link>
+          <motion.div whileHover={{ x: 6, scale: 1.015 }} whileTap={{ scale: 0.98 }} style={{ width: '100%' }}>
+            <Link 
+              to="/history" 
+              className={`clay-btn-nav ${location.pathname === '/history' ? 'active' : ''}`}
+              style={{ width: '100%' }}
+            >
+              <span style={{ fontSize: '1.15rem' }}>🗓️</span> History Logs
+            </Link>
+          </motion.div>
 
-          <Link 
-            to="/reports" 
-            className={`clay-btn-nav ${location.pathname === '/reports' ? 'active' : ''}`}
-          >
-            <span style={{ fontSize: '1.15rem' }}>📝</span> AI Reports
-          </Link>
+          <motion.div whileHover={{ x: 6, scale: 1.015 }} whileTap={{ scale: 0.98 }} style={{ width: '100%' }}>
+            <Link 
+              to="/reports" 
+              className={`clay-btn-nav ${location.pathname === '/reports' ? 'active' : ''}`}
+              style={{ width: '100%' }}
+            >
+              <span style={{ fontSize: '1.15rem' }}>📝</span> AI Reports
+            </Link>
+          </motion.div>
 
-          <Link 
-            to="/trends" 
-            className={`clay-btn-nav ${location.pathname === '/trends' ? 'active' : ''}`}
-          >
-            <span style={{ fontSize: '1.15rem' }}>📊</span> Trends & Baselines
-          </Link>
+          <motion.div whileHover={{ x: 6, scale: 1.015 }} whileTap={{ scale: 0.98 }} style={{ width: '100%' }}>
+            <Link 
+              to="/trends" 
+              className={`clay-btn-nav ${location.pathname === '/trends' ? 'active' : ''}`}
+              style={{ width: '100%' }}
+            >
+              <span style={{ fontSize: '1.15rem' }}>📊</span> Trends & Baselines
+            </Link>
+          </motion.div>
 
 
-        </div>
+        </motion.div>
       </aside>
 
       {/* MAIN LAYOUT WRAPPER */}
@@ -307,82 +376,93 @@ function MainLayout({ userId, currentUser, onSignOut }) {
 
         {/* DYNAMIC SCREEN ROUTING */}
         <main style={{ flex: 1, minHeight: 0 }}>
-          <Routes>
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
             <Route 
               path="/" 
-              element={<Dashboard sessions={filteredSessions} loading={loading} currentUser={currentUser} />} 
+              element={
+                <PageTransition>
+                  <Dashboard sessions={filteredSessions} loading={loading} currentUser={currentUser} />
+                </PageTransition>
+              } 
             />
             
             <Route 
               path="/checkin" 
-              element={<Checkin userId={userId} onRefreshHistory={fetchHistory} currentUser={currentUser} />} 
+              element={
+                <PageTransition>
+                  <Checkin userId={userId} onRefreshHistory={fetchHistory} currentUser={currentUser} />
+                </PageTransition>
+              } 
             />
 
             {/* Timelines Route */}
             <Route 
               path="/history" 
               element={
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
-                    🗓️ History Logs ({filteredSessions.length} listed)
-                  </h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {filteredSessions.length > 0 ? (
-                      [...filteredSessions].reverse().map((s, idx) => (
-                        <div key={idx} className="clay-card" style={{ padding: 24, background: 'white' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                            <strong style={{ color: 'var(--secondary-purple)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>
-                              🗓️ Check-In: {s.date}
-                            </strong>
-                            <span style={{
-                              padding: '4px 10px',
-                              borderRadius: 12,
-                              backgroundColor: s.emotional_valence >= 0 ? 'var(--soft-green)' : 'var(--soft-pink)',
-                              fontSize: '0.75rem',
-                              fontWeight: 700,
-                              color: s.emotional_valence >= 0 ? '#1b5e20' : '#b71c1c'
-                            }}>
-                              {s.emotional_valence >= 0 ? "😊 Calm Breeze" : "😔 Heavy Heart"}
-                            </span>
-                          </div>
-                          
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                            {/* Dialogue list */}
-                            {s.conversation_history && s.conversation_history.length > 0 && (
-                              <div style={{ background: 'var(--bg-light)', borderRadius: 16, padding: '12px 16px' }}>
-                                <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)', display: 'block', marginBottom: 8 }}>
-                                  💬 Dialogue Script
-                                </strong>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                  {s.conversation_history.map((msg, midx) => (
-                                    <div key={midx} style={{ fontSize: '0.8rem', lineHeight: 1.4 }}>
-                                      <span style={{ fontWeight: 800, color: msg.role === 'user' ? 'var(--secondary-purple)' : '#BFA2FF' }}>
-                                        {msg.role === 'user' ? 'You: ' : 'Alex: '}
-                                      </span>
-                                      <span style={{ color: 'var(--text-primary)' }}>{msg.content}</span>
-                                    </div>
-                                  ))}
+                <PageTransition>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
+                      🗓️ History Logs ({filteredSessions.length} listed)
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                      {filteredSessions.length > 0 ? (
+                        [...filteredSessions].reverse().map((s, idx) => (
+                          <div key={idx} className="clay-card" style={{ padding: 24, background: 'white' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                              <strong style={{ color: 'var(--secondary-purple)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>
+                                🗓️ Check-In: {s.date}
+                              </strong>
+                              <span style={{
+                                padding: '4px 10px',
+                                borderRadius: 12,
+                                backgroundColor: s.emotional_valence >= 0 ? 'var(--soft-green)' : 'var(--soft-pink)',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                color: s.emotional_valence >= 0 ? '#1b5e20' : '#b71c1c'
+                              }}>
+                                {s.emotional_valence >= 0 ? "😊 Calm Breeze" : "😔 Heavy Heart"}
+                              </span>
+                            </div>
+                            
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                              {/* Dialogue list */}
+                              {s.conversation_history && s.conversation_history.length > 0 && (
+                                <div style={{ background: 'var(--bg-light)', borderRadius: 16, padding: '12px 16px' }}>
+                                  <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)', display: 'block', marginBottom: 8 }}>
+                                    💬 Dialogue Script
+                                  </strong>
+                                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    {s.conversation_history.map((msg, midx) => (
+                                      <div key={midx} style={{ fontSize: '0.8rem', lineHeight: 1.4 }}>
+                                        <span style={{ fontWeight: 800, color: msg.role === 'user' ? 'var(--secondary-purple)' : '#BFA2FF' }}>
+                                          {msg.role === 'user' ? 'You: ' : 'Alex: '}
+                                        </span>
+                                        <span style={{ color: 'var(--text-primary)' }}>{msg.content}</span>
+                                      </div>
+                                    ))}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
 
-                            {/* Metrics indicators */}
-                            <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                              <div>🗣️ Speech Pace: <strong style={{ color: 'var(--text-primary)' }}>{s.speech_rate_wpm ? s.speech_rate_wpm.toFixed(0) : 0} WPM</strong></div>
-                              <div>🧩 Topic Coherence: <strong style={{ color: 'var(--text-primary)' }}>{s.semantic_coherence ? (s.semantic_coherence * 100).toFixed(0) : 0}%</strong></div>
-                              <div>🌸 Vocabulary Richness: <strong style={{ color: 'var(--text-primary)' }}>{s.type_token_ratio ? s.type_token_ratio.toFixed(2) : '0.00'}</strong></div>
+                              {/* Metrics indicators */}
+                              <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                <div>🗣️ Speech Pace: <strong style={{ color: 'var(--text-primary)' }}>{s.speech_rate_wpm ? s.speech_rate_wpm.toFixed(0) : 0} WPM</strong></div>
+                                <div>🧩 Topic Coherence: <strong style={{ color: 'var(--text-primary)' }}>{s.semantic_coherence ? (s.semantic_coherence * 100).toFixed(0) : 0}%</strong></div>
+                                <div>🌸 Vocabulary Richness: <strong style={{ color: 'var(--text-primary)' }}>{s.type_token_ratio ? s.type_token_ratio.toFixed(2) : '0.00'}</strong></div>
+                              </div>
                             </div>
                           </div>
+                        ))
+                      ) : (
+                        <div className="clay-card" style={{ padding: '60px 20px', textAlign: 'center', background: 'white' }}>
+                          <AlexMascot size={72} state="idle" style={{ marginBottom: 16 }} />
+                          <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>No check-in logs found.</p>
                         </div>
-                      ))
-                    ) : (
-                      <div className="clay-card" style={{ padding: '60px 20px', textAlign: 'center', background: 'white' }}>
-                        <AlexMascot size={72} state="idle" style={{ marginBottom: 16 }} />
-                        <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>No check-in logs found.</p>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
-                </div>
+                </PageTransition>
               } 
             />
 
@@ -390,50 +470,171 @@ function MainLayout({ userId, currentUser, onSignOut }) {
             <Route 
               path="/reports" 
               element={
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
-                    📝 AI Reports History
-                  </h2>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {filteredSessions.length > 0 ? (
-                      [...filteredSessions].reverse().map((s, idx) => (
-                        s.report ? (
-                          <div key={idx} className="clay-card" style={{ padding: 24, background: 'white' }}>
-                            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: 16, borderBottom: '2px dashed var(--bg-light)', paddingBottom: 10 }}>
-                              📝 Check-In Report — {s.date}
-                            </h3>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                              {parseReport(s.report).map((card) => (
-                                <div key={card.key} style={{
-                                  padding: 16,
-                                  borderRadius: 16,
-                                  background: 'var(--bg-light)',
-                                  borderLeft: `5px solid ${card.border}`,
-                                  fontSize: '0.82rem'
-                                }}>
-                                  <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: 6, fontSize: '0.85rem' }}>
-                                    {card.title}
-                                  </strong>
-                                  <p style={{ color: 'var(--text-primary)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>
-                                    {card.content}
-                                  </p>
+                <PageTransition>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
+                      📝 AI Reports History
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                      {filteredSessions.length > 0 ? (
+                        [...filteredSessions].reverse().map((s, idx) => (
+                          s.report ? (
+                            <div key={idx} className="clay-card" style={{ padding: '36px 30px', background: 'white', display: 'flex', flexDirection: 'column', gap: 20 }}>
+                              
+                              {/* Letter Header */}
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                                <div>
+                                  <h3 style={{ fontSize: '2.2rem', color: 'var(--secondary-purple)', fontWeight: 800, margin: 0, fontFamily: 'var(--font-heading)' }}>
+                                    Today's Letter
+                                  </h3>
+                                  <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 800, letterSpacing: '0.5px' }}>
+                                    COMPOSED ON {formatReportDate(s.date)}
+                                  </span>
                                 </div>
-                              ))}
+                                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                                  <div style={{
+                                    padding: '6px 12px',
+                                    borderRadius: 20,
+                                    backgroundColor: s.emotional_valence >= 0 ? '#FFEBEE' : '#FFEBEE', 
+                                    color: '#E53E3E',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 800,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 6
+                                  }}>
+                                    {s.emotional_valence >= 0 ? "😊 Calm Breeze 🌿" : "😔 Heavy Heart 🌧️"}
+                                  </div>
+                                  <div style={{
+                                    padding: '6px 12px',
+                                    borderRadius: 20,
+                                    backgroundColor: '#FFFFFF',
+                                    border: '2px solid #E2E8F0',
+                                    color: 'var(--secondary-purple)',
+                                    fontSize: '0.7rem',
+                                    fontWeight: 800,
+                                    letterSpacing: '0.5px'
+                                  }}>
+                                    WRITTEN BY ALEX
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div style={{ borderBottom: '2px dashed var(--bg-light)' }} />
+
+                              {/* Letter Content */}
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                                {parseReport(s.report).map((card) => {
+                                  let dotColor = '#BFA2FF' 
+                                  let cardBg = '#F6F0FF'
+                                  if (card.key === 'noticed') {
+                                    dotColor = '#FFF1B8' 
+                                    cardBg = '#FFFDF5'
+                                  } else if (card.key === 'advice') {
+                                    dotColor = '#FFD6E7' 
+                                    cardBg = '#FFF5FA'
+                                  } else if (card.key === 'goal') {
+                                    dotColor = '#D8F5D0' 
+                                    cardBg = '#F4FDF2'
+                                  } else if (card.key === 'closing') {
+                                    dotColor = '#DDEEFF' 
+                                    cardBg = '#F5FAFF'
+                                  }
+
+                                  if (card.key === 'goal') {
+                                    return (
+                                      <div key={card.key} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.98rem', fontWeight: 800, color: 'var(--secondary-purple)' }}>
+                                          <span style={{ color: dotColor, fontSize: '1.2rem' }}>●</span> One Small Goal For Tomorrow
+                                        </div>
+                                        <div style={{
+                                          padding: '16px 20px',
+                                          borderRadius: 16,
+                                          background: cardBg,
+                                          border: '2px solid #D8F5D0',
+                                          fontSize: '1rem',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          gap: 12
+                                        }}>
+                                          <span style={{ fontSize: '1.5rem' }}>🎯</span>
+                                          <p style={{ color: '#1b5e20', margin: 0, fontWeight: 700, lineHeight: 1.4 }}>
+                                            {card.content}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )
+                                  }
+
+                                  let cleanTitle = card.title
+                                  if (card.key === 'seemed') cleanTitle = "How You Seemed Today"
+                                  else if (card.key === 'noticed') cleanTitle = "What I Noticed"
+                                  else if (card.key === 'advice') cleanTitle = "Real Talk From Your Friend"
+                                  else if (card.key === 'closing') cleanTitle = "Proud of You"
+
+                                  return (
+                                    <div key={card.key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.98rem', fontWeight: 800, color: 'var(--secondary-purple)' }}>
+                                        <span style={{ color: dotColor, fontSize: '1.2rem' }}>●</span> {cleanTitle}
+                                      </div>
+                                      <div style={{
+                                        padding: '16px 20px',
+                                        borderRadius: 16,
+                                        background: cardBg,
+                                        border: '1.5px solid #FFFFFF',
+                                        fontSize: '1rem'
+                                      }}>
+                                        <p style={{ color: 'var(--text-primary)', whiteSpace: 'pre-line', lineHeight: 1.5, margin: 0 }}>
+                                          {card.content}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )
+                                })}
+                              </div>
+
+                              {/* Letter Footer */}
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                                alignItems: 'center',
+                                marginTop: 10,
+                                borderTop: '2px dashed var(--bg-light)',
+                                paddingTop: 20,
+                                flexWrap: 'wrap',
+                                gap: 16
+                              }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                  <AlexMascot size={44} state="comforting" />
+                                  <div>
+                                    <span style={{ fontSize: '0.72rem', color: 'var(--text-secondary)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
+                                      COMPANION
+                                    </span>
+                                    <strong style={{ fontSize: '0.98rem', color: 'var(--secondary-purple)' }}>– Alex 💜</strong>
+                                  </div>
+                                </div>
+                                <div style={{ display: 'flex', gap: 10 }}>
+                                  <Link to="/history" className="clay-btn-cta" style={{ padding: '8px 16px', fontSize: '0.8rem', backgroundColor: '#EBF8FF', color: '#2B6CB0', border: '1.5px solid #FFFFFF', borderBottom: '3px solid #BEE3F8', boxShadow: 'none', background: '#EBF8FF' }}>
+                                    📖 History Timeline
+                                  </Link>
+                                  <Link to="/checkin" className="clay-btn-cta" style={{ padding: '8px 16px', fontSize: '0.8rem', borderBottomWidth: '3px' }}>
+                                    💜 Chat Again
+                                  </Link>
+                                </div>
+                              </div>
+
                             </div>
-                            <div style={{ marginTop: 14, textAlign: 'right', fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary-purple)' }}>
-                              – Alex 💜
-                            </div>
-                          </div>
-                        ) : null
-                      ))
-                    ) : (
-                      <div className="clay-card" style={{ padding: '60px 20px', textAlign: 'center', background: 'white' }}>
-                        <AlexMascot size={72} state="idle" style={{ marginBottom: 16 }} />
-                        <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>No reports generated yet.</p>
-                      </div>
-                    )}
+                          ) : null
+                        ))
+                      ) : (
+                        <div className="clay-card" style={{ padding: '60px 20px', textAlign: 'center', background: 'white' }}>
+                          <AlexMascot size={72} state="idle" style={{ marginBottom: 16 }} />
+                          <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>No reports generated yet.</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
+                </PageTransition>
               } 
             />
 
@@ -441,19 +642,40 @@ function MainLayout({ userId, currentUser, onSignOut }) {
             <Route 
               path="/trends" 
               element={
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
-                    📊 Detailed Trends & Baselines
-                  </h2>
-                  <Dashboard sessions={sessions} loading={loading} currentUser={currentUser} onlyCharts={true} />
-                </div>
+                <PageTransition>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
+                      📊 Detailed Trends & Baselines
+                    </h2>
+                    <Dashboard sessions={sessions} loading={loading} currentUser={currentUser} onlyCharts={true} />
+                  </div>
+                </PageTransition>
               } 
             />
           </Routes>
+          </AnimatePresence>
         </main>
       </div>
     </div>
   )
+}
+
+const formatReportDate = (dateStr) => {
+  if (!dateStr) return ""
+  try {
+    const parts = dateStr.split("-")
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10)
+      const month = parseInt(parts[1], 10) - 1
+      const day = parseInt(parts[2], 10)
+      const dt = new Date(year, month, day)
+      return dt.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
+    }
+    const d = new Date(dateStr)
+    return d.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()
+  } catch (e) {
+    return dateStr.toUpperCase()
+  }
 }
 
 export default function App() {
@@ -588,15 +810,22 @@ export default function App() {
         </svg>
 
         {/* Welcome Card */}
-        <div className="clay-card" style={{
-          width: '100%',
-          maxWidth: 440,
-          padding: '40px 30px',
-          textAlign: 'center',
-          backgroundColor: 'white',
-          zIndex: 10,
-          position: 'relative'
-        }}>
+        <motion.div 
+          className="clay-card"
+          initial={{ opacity: 0, scale: 0.94, y: 15 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 200, damping: 20 }}
+          whileHover={{ y: -6, boxShadow: "0 20px 35px rgba(157, 123, 255, 0.12)" }}
+          style={{
+            width: '100%',
+            maxWidth: 440,
+            padding: '40px 30px',
+            textAlign: 'center',
+            backgroundColor: 'white',
+            zIndex: 10,
+            position: 'relative'
+          }}
+        >
           {/* Mascot Header */}
           <div style={{ marginBottom: 20 }}>
             <AlexMascot size={110} />
@@ -738,7 +967,7 @@ export default function App() {
               </>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     )
   }

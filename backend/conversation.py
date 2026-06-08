@@ -48,7 +48,10 @@ def call_ai(messages: list, max_tokens: int = 300) -> str:
             temperature=0.85
         )
         result = response.choices[0].message.content.strip()
-        print(f"AI response: {result[:150]}")
+        try:
+            print(f"AI response: {result[:150]}")
+        except Exception:
+            pass
         return result
     except Exception as e:
         print(f"Groq API error: {e}")
@@ -75,8 +78,11 @@ def get_next_question(conversation_history: list, session_number: int) -> str:
                 last_user_msg = msg["content"]
                 break
 
-        print(f"\n=== Generating follow-up ===")
-        print(f"Last user said: {last_user_msg}")
+        try:
+            print(f"\n=== Generating follow-up ===")
+            print(f"Last user said: {last_user_msg}")
+        except Exception:
+            pass
 
         # Build messages for Groq — system prompt + full conversation history
         messages = [{"role": "system", "content": ALEX_SYSTEM}]
@@ -126,7 +132,10 @@ def generate_session_report(conversation_history: list, biomarkers: dict) -> str
                 lines.append(f"Person: {msg['content']}")
 
         full_convo = "\n".join(lines)
-        print(f"\n=== Generating report ===\n{full_convo}\n")
+        try:
+            print(f"\n=== Generating report ===\n{full_convo}\n")
+        except Exception:
+            pass
 
         # Extract what the person actually said
         user_messages = [msg["content"] for msg in conversation_history if msg["role"] == "user"]
@@ -180,7 +189,10 @@ Every single point MUST reference what they actually said in the conversation ab
         ]
 
         result = call_ai(messages, max_tokens=700)
-        print(f"Report generated:\n{result[:300]}\n")
+        try:
+            print(f"Report generated:\n{result[:300]}\n")
+        except Exception:
+            pass
         return result
 
     except Exception as e:
