@@ -231,30 +231,7 @@ function MainLayout({ userId, currentUser, onSignOut }) {
             <span style={{ fontSize: '1.15rem' }}>📊</span> Trends & Baselines
           </Link>
 
-          {/* Spacer */}
-          <div style={{ flex: 1 }} />
 
-          {/* PREMIUM UPGRADE PROMO CARD */}
-          <div style={{
-            background: 'var(--cream)',
-            border: '2px dashed #BFA2FF',
-            borderRadius: '20px',
-            padding: '16px',
-            textAlign: 'center',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10
-          }}>
-            <h4 style={{ fontSize: '0.85rem', color: 'var(--secondary-purple)', fontWeight: 800 }}>
-              Upgrade to Premium 🌟
-            </h4>
-            <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
-              Get unlimited voice entries & deep analysis reports.
-            </p>
-            <button className="clay-btn-cta" style={{ padding: '8px 16px', fontSize: '0.75rem', borderBottomWidth: '3px' }}>
-              Go Premium
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -626,7 +603,7 @@ export default function App() {
           </div>
 
           <h2 style={{
-            fontSize: '1.8rem',
+            fontSize: '1.9rem',
             fontWeight: 800,
             color: 'var(--text-primary)',
             marginBottom: 8,
@@ -635,7 +612,7 @@ export default function App() {
             {authMode === "login" ? "Welcome Back!" : "Join Us!"}
           </h2>
           <p style={{
-            fontSize: '0.85rem',
+            fontSize: '1.05rem',
             color: 'var(--text-secondary)',
             lineHeight: 1.6,
             marginBottom: 30,
@@ -653,7 +630,7 @@ export default function App() {
                 color: '#b71c1c',
                 padding: '12px',
                 borderRadius: '16px',
-                fontSize: '0.85rem',
+                fontSize: '0.95rem',
                 fontWeight: 600,
                 border: '2px solid #FFD6E7',
                 textAlign: 'center'
@@ -668,7 +645,7 @@ export default function App() {
                 color: '#1b5e20',
                 padding: '12px',
                 borderRadius: '16px',
-                fontSize: '0.85rem',
+                fontSize: '0.95rem',
                 fontWeight: 600,
                 border: '2px solid #D8F5D0',
                 textAlign: 'center'
@@ -678,7 +655,7 @@ export default function App() {
             )}
 
             <div style={{ textAlign: 'left' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
+              <label style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
                 Username
               </label>
               <input 
@@ -692,13 +669,13 @@ export default function App() {
             </div>
 
             <div style={{ textAlign: 'left' }}>
-              <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
+              <label style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
                 Password
               </label>
               <input 
                 type="password" 
                 className="clay-input"
-                placeholder="••••••••"
+                placeholder=""
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
                 required
@@ -707,13 +684,13 @@ export default function App() {
 
             {authMode === "register" && (
               <div style={{ textAlign: 'left' }}>
-                <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
+                <label style={{ fontSize: '0.92rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
                   Confirm Password
                 </label>
                 <input 
                   type="password" 
                   className="clay-input"
-                  placeholder="••••••••"
+                  placeholder=""
                   value={confirmPasswordInput}
                   onChange={(e) => setConfirmPasswordInput(e.target.value)}
                   required
@@ -730,7 +707,7 @@ export default function App() {
             </button>
           </form>
 
-          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 24, fontWeight: 600 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, fontSize: '0.95rem', color: 'var(--text-secondary)', marginTop: 24, fontWeight: 600 }}>
             {authMode === "login" ? (
               <>
                 Don't have an account?{" "}

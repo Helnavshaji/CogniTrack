@@ -379,7 +379,7 @@ export default function Checkin({ userId, onRefreshHistory, currentUser = "helna
           >
             Let's Chat 💬
           </button>
-          <p style={{ color: "var(--text-secondary)", fontSize: '0.72rem', marginTop: 16, fontWeight: 600 }}>
+          <p style={{ color: "var(--text-secondary)", fontSize: '0.9rem', marginTop: 16, fontWeight: 600 }}>
             3–5 minutes · Voice check-in
           </p>
         </div>
@@ -505,7 +505,7 @@ export default function Checkin({ userId, onRefreshHistory, currentUser = "helna
               >
                 🎙️
               </button>
-              <p style={{ color: "var(--text-secondary)", fontSize: '0.8rem', fontWeight: 600 }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: '0.98rem', fontWeight: 600 }}>
                 Tap the mic to respond
               </p>
             </div>
@@ -541,37 +541,13 @@ export default function Checkin({ userId, onRefreshHistory, currentUser = "helna
                 </button>
               </div>
               
-              <p style={{ color: "var(--text-secondary)", fontSize: '0.8rem', fontWeight: 600 }}>
+              <p style={{ color: "var(--text-secondary)", fontSize: '0.98rem', fontWeight: 600 }}>
                 Tap stop when finished speaking
               </p>
             </div>
           )}
 
-          {/* Conversation history timeline inside panel */}
-          {history.length > 0 && (
-            <div style={{ width: '100%', borderTop: '2px dashed var(--bg-light)', paddingTop: 20, textAlign: 'left' }}>
-              <span style={{ fontSize: '0.68rem', fontWeight: 800, color: 'var(--text-secondary)', letterSpacing: '0.8px', textTransform: 'uppercase' }}>
-                Chat Log
-              </span>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 10 }}>
-                {history.map((h, i) => (
-                  <div key={i} style={{ 
-                    padding: '8px 12px', 
-                    borderRadius: 14, 
-                    fontSize: '0.8rem', 
-                    backgroundColor: h.role === 'user' ? 'var(--bg-light)' : 'var(--cream)',
-                    alignSelf: h.role === 'user' ? 'flex-end' : 'flex-start',
-                    maxWidth: '85%'
-                  }}>
-                    <strong style={{ fontSize: '0.62rem', color: h.role === 'user' ? 'var(--secondary-purple)' : '#ff9f1c', display: 'block', marginBottom: 2 }}>
-                      {h.role === 'user' ? 'YOU' : 'ALEX'}
-                    </strong>
-                    {h.content}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
         </div>
       )}
 
@@ -598,7 +574,7 @@ export default function Checkin({ userId, onRefreshHistory, currentUser = "helna
             }}>
               Thanks for checking in!
             </h2>
-            <p style={{ color: "var(--text-secondary)", fontSize: '0.85rem', fontWeight: 600 }}>
+            <p style={{ color: "var(--text-secondary)", fontSize: '1rem', fontWeight: 600 }}>
               {sentiment.label}
             </p>
           </div>

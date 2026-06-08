@@ -195,9 +195,9 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
           gap: 6
         }}>
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>📅</div>
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#2B6CB0', letterSpacing: '0.5px' }}>CHECK-INS</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#2B6CB0', letterSpacing: '0.5px' }}>CHECK-INS</span>
           <strong style={{ fontSize: '1.6rem', color: '#2B6CB0', fontWeight: 800 }}>{totalEntries}</strong>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Total entries</span>
+          <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>Total entries</span>
         </div>
 
         {/* Streak card */}
@@ -212,9 +212,9 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
           gap: 6
         }}>
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>🔥</div>
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#D97706', letterSpacing: '0.5px' }}>STREAK</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#D97706', letterSpacing: '0.5px' }}>STREAK</span>
           <strong style={{ fontSize: '1.6rem', color: '#D97706', fontWeight: 800 }}>{currentStreak}</strong>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Consecutive</span>
+          <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>Consecutive</span>
         </div>
 
         {/* Avg Mood card */}
@@ -229,11 +229,11 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
           gap: 6
         }}>
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>😊</div>
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#E53E3E', letterSpacing: '0.5px' }}>AVG MOOD</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#E53E3E', letterSpacing: '0.5px' }}>AVG MOOD</span>
           <strong style={{ fontSize: '1.15rem', color: '#E53E3E', fontWeight: 800, height: 32, display: 'flex', alignItems: 'center' }}>
             {moodVibe}
           </strong>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Frequent vibe</span>
+          <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>Frequent vibe</span>
         </div>
 
         {/* Completed card */}
@@ -248,9 +248,9 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
           gap: 6
         }}>
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>✅</div>
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#166534', letterSpacing: '0.5px' }}>COMPLETED</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#166534', letterSpacing: '0.5px' }}>COMPLETED</span>
           <strong style={{ fontSize: '1.6rem', color: '#166534', fontWeight: 800 }}>{completedCount}/7</strong>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>This week</span>
+          <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>This week</span>
         </div>
 
         {/* Weekly Goal card */}
@@ -265,12 +265,12 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
           gap: 6
         }}>
           <div style={{ fontSize: '1.6rem', marginBottom: 2 }}>📈</div>
-          <span style={{ fontSize: '0.65rem', fontWeight: 800, color: '#86198F', letterSpacing: '0.5px' }}>WEEKLY GOAL</span>
+          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#86198F', letterSpacing: '0.5px' }}>WEEKLY GOAL</span>
           <strong style={{ fontSize: '1.6rem', color: '#86198F', fontWeight: 800 }}>{goalPercentage}%</strong>
           <div style={{ width: '100%', height: 6, backgroundColor: '#E2E8F0', borderRadius: 10, overflow: 'hidden', marginTop: 2 }}>
             <div style={{ width: `${goalPercentage}%`, height: '100%', backgroundColor: '#86198F', borderRadius: 10 }} />
           </div>
-          <span style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>{totalEntries} of 7 target</span>
+          <span style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>{totalEntries} of 7 target</span>
         </div>
       </div>
 
