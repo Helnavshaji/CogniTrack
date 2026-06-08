@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link, useLocation, useNavigate 
 import axios from 'axios'
 import Dashboard from './Dashboard'
 import Checkin from './Checkin'
+import AlexMascot from './AlexMascot'
 
 const API = "http://localhost:8000"
 
@@ -10,11 +11,11 @@ const parseReport = (reportText) => {
   if (!reportText) return []
   
   const headers = [
-    { title: "💬 How you seemed today", key: "seemed", marker: "💬", border: "var(--accent-purple)" },
-    { title: "🌟 What I noticed about you", key: "noticed", marker: "🌟", border: "var(--accent-teal)" },
-    { title: "🤝 Real talk from your friend", key: "advice", marker: "🤝", border: "var(--accent-orange)" },
-    { title: "🎯 Your one thing for tomorrow", key: "goal", marker: "🎯", border: "var(--accent-pink)" },
-    { title: "💙 I'm proud of you", key: "closing", marker: "💙", border: "var(--accent-purple)" }
+    { title: "💬 How you seemed today", key: "seemed", marker: "💬", border: "#BFA2FF" },
+    { title: "🌟 What I noticed about you", key: "noticed", marker: "🌟", border: "#00f5d4" },
+    { title: "🤝 Real talk from your friend", key: "advice", marker: "🤝", border: "#ff9f1c" },
+    { title: "🎯 Your one thing for tomorrow", key: "goal", marker: "🎯", border: "#ff007f" },
+    { title: "💙 I'm proud of you", key: "closing", marker: "💙", border: "#9d4edd" }
   ]
 
   let parsed = []
@@ -61,31 +62,22 @@ const parseReport = (reportText) => {
       title: "📝 Alex's Note",
       key: "full",
       content: reportText,
-      border: "var(--accent-purple)"
+      border: "#BFA2FF"
     })
   }
 
   return parsed
 }
 
-function MainLayout({ userId }) {
+function MainLayout({ userId, currentUser, onSignOut }) {
   const location = useLocation()
   const navigate = useNavigate()
   
-  // States
-  const [showSplash, setShowSplash] = useState(() => {
-    return !sessionStorage.getItem('splash_shown')
-  })
-  const [splashFade, setSplashFade] = useState(false)
-  const [typewriterText, setTypewriterText] = useState("")
-  const [showSplashButton, setShowSplashButton] = useState(false)
-  
   const [sessions, setSessions] = useState([])
   const [loading, setLoading] = useState(true)
-  const [sidebarOpen, setSidebarOpen] = useState(true) // Sidebar toggle state
-  const [expandedSessionIdx, setExpandedSessionIdx] = useState(null) // Expandable history logs state
-
-  const fullPrompt = "Hey Bro..How are you? 👋"
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [expandedSessionIdx, setExpandedSessionIdx] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
 
   // Fetch session history
   const fetchHistory = () => {
@@ -101,402 +93,519 @@ function MainLayout({ userId }) {
     fetchHistory()
   }, [userId])
 
-  // Typewriter effect for splash screen
-  useEffect(() => {
-    if (!showSplash) return
-    let index = 0
-    const interval = setInterval(() => {
-      if (index < fullPrompt.length) {
-        setTypewriterText(fullPrompt.slice(0, index + 1))
-        index++
-      } else {
-        clearInterval(interval)
-      }
-    }, 55)
+  // Filter sessions based on search
+  const filteredSessions = sessions.filter(s => {
+    if (!searchQuery) return true
+    const q = searchQuery.toLowerCase()
+    return (s.date && s.date.includes(q)) || 
+           (s.transcript && s.transcript.toLowerCase().includes(q)) ||
+           (s.report && s.report.toLowerCase().includes(q))
+  })
 
-    const buttonTimer = setTimeout(() => {
-      setShowSplashButton(true)
-    }, 2000)
-
-    return () => {
-      clearInterval(interval)
-      clearTimeout(buttonTimer)
-    }
-  }, [showSplash])
-
-  const handleEnterApp = () => {
-    setSplashFade(true)
-    setTimeout(() => {
-      setShowSplash(false)
-      sessionStorage.setItem('splash_shown', 'true')
-      navigate('/checkin') // Go straight to Check-in active mascot
-    }, 800)
-  }
-
-  if (showSplash) {
-    return (
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 9999,
-        backgroundColor: '#0D0D1A',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        opacity: splashFade ? 0 : 1,
-        transition: 'opacity 0.8s ease',
-        textAlign: 'center',
-        padding: 20
-      }}>
-        <div className="bg-blobs">
-          <div className="blob blob-1"></div>
-          <div className="blob blob-2"></div>
-        </div>
-
-        <div style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: '2.5rem',
-          fontWeight: 800,
-          color: 'white',
-          marginBottom: '2rem',
-          minHeight: '80px',
-          zIndex: 10,
-          textShadow: '0 0 20px rgba(157, 78, 221, 0.4)'
-        }}>
-          {typewriterText}
-        </div>
-        {showSplashButton && (
-          <button
-            onClick={handleEnterApp}
-            className="btn-press"
-            style={{
-              padding: '14px 36px',
-              backgroundColor: 'var(--accent-purple)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '12px',
-              fontSize: '1.1rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-neon-purple)',
-              animation: 'slideInUp 0.5s ease-out both',
-              zIndex: 10
-            }}
-          >
-            lets talk
-          </button>
-        )}
-      </div>
-    )
-  }
+  const userInitial = currentUser ? currentUser.charAt(0).toUpperCase() : 'U'
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', width: '100%' }}>
-      {/* Background blobs */}
-      <div className="bg-blobs">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
-        <div className="blob blob-3"></div>
-      </div>
-
-      {/* Translucent Brain Background Watermark */}
-      <div className="brain-bg" style={{
-        position: 'fixed',
-        left: '50%',
-        top: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 'min(420px, 65vw)',
-        height: 'min(420px, 65vw)',
-        zIndex: -1,
-        pointerEvents: 'none',
-        animation: 'brain-pulse 8s infinite ease-in-out'
-      }}>
-        <svg viewBox="0 0 200 200" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ width: '100%', height: '100%', color: 'var(--accent-purple)', opacity: 0.85 }}>
-          <defs>
-            <linearGradient id="brainGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="var(--accent-purple)" />
-              <stop offset="50%" stopColor="var(--accent-pink)" />
-              <stop offset="100%" stopColor="var(--accent-teal)" />
-            </linearGradient>
-          </defs>
-          {/* Left Hemisphere Outer Contour */}
-          <path d="M 100,35 C 65,35 45,60 45,95 C 45,118 55,134 55,152 C 55,170 72,176 88,162 C 94,157 100,150 100,140" stroke="url(#brainGrad)" />
-          {/* Right Hemisphere Outer Contour */}
-          <path d="M 100,35 C 135,35 155,60 155,95 C 155,118 145,134 145,152 C 145,170 128,176 112,162 C 106,157 100,150 100,140" stroke="url(#brainGrad)" />
-          
-          {/* Lobe folding detail curves */}
-          <path d="M 68,70 C 62,80 72,90 82,85" stroke="url(#brainGrad)" strokeWidth="1" />
-          <path d="M 132,70 C 138,80 128,90 118,85" stroke="url(#brainGrad)" strokeWidth="1" />
-          <path d="M 52,100 C 62,95 72,105 68,115" stroke="url(#brainGrad)" strokeWidth="1" />
-          <path d="M 148,100 C 138,95 128,105 132,115" stroke="url(#brainGrad)" strokeWidth="1" />
-          <path d="M 68,130 C 62,140 78,145 88,135" stroke="url(#brainGrad)" strokeWidth="1" />
-          <path d="M 132,130 C 138,140 122,145 112,135" stroke="url(#brainGrad)" strokeWidth="1" />
-          
-          {/* Internal neural node connection paths */}
-          <path d="M 100,50 Q 82,70 78,90 Q 74,110 88,120" stroke="url(#brainGrad)" strokeWidth="0.8" strokeDasharray="3,3" />
-          <path d="M 100,50 Q 118,70 122,90 Q 126,110 112,120" stroke="url(#brainGrad)" strokeWidth="0.8" strokeDasharray="3,3" />
-        </svg>
-      </div>
-
-      {/* Center Website Name Header */}
-      <div style={{
-        position: 'absolute',
-        left: '50%',
-        top: 25,
-        transform: 'translateX(-50%)',
-        fontSize: '1.6rem',
-        fontWeight: 800,
-        color: 'white',
-        fontFamily: 'var(--font-heading)',
-        zIndex: 80,
-        textShadow: '0 0 15px rgba(157, 78, 221, 0.4)',
-        pointerEvents: 'none'
-      }}>
-        CogniTrack
-      </div>
-
-      {/* Floating Toggle Sidebar Button */}
-      <button 
-        onClick={() => setSidebarOpen(!sidebarOpen)} 
-        className="btn-press" 
-        style={{
-          position: 'fixed',
-          left: 20,
-          top: 20,
-          zIndex: 150,
-          width: 44,
-          height: 44,
-          borderRadius: 12,
-          border: '1px solid var(--border-glass)',
-          background: 'rgba(20, 20, 45, 0.6)',
-          backdropFilter: 'blur(10px)',
-          color: 'white',
-          fontSize: '1.2rem',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          outline: 'none'
-        }}
-        title={sidebarOpen ? "Hide Dashboard" : "Show Dashboard"}
-      >
-        {sidebarOpen ? '✕' : '☰'}
-      </button>
-
-      {/* Translucent Left Hidable Sidebar */}
-      <aside className="glass" style={{
-        position: 'fixed',
-        left: sidebarOpen ? 20 : -320, // Slide off-screen if closed
-        top: 80,
-        bottom: 20,
-        width: 300,
-        borderRadius: 24,
-        padding: '30px 24px',
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-light)', width: '100%' }}>
+      
+      {/* LEFT SIDEBAR (Claymorphic Navigation Panels) */}
+      <aside style={{
+        width: 320,
+        padding: '30px 20px',
         display: 'flex',
         flexDirection: 'column',
-        gap: 24,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-        border: '1px solid var(--border-glass)',
+        gap: 20,
         zIndex: 100,
-        overflow: 'hidden',
-        transition: 'left 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
+        flexShrink: 0
       }}>
-        {/* Nav Links */}
-        <nav style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Link to="/checkin" className="btn-press" style={{
-            padding: '14px 20px',
-            background: 'linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-pink) 100%)',
-            color: 'white',
-            borderRadius: 12,
-            textDecoration: 'none',
-            fontWeight: 700,
-            textAlign: 'center',
-            display: 'block',
-            boxShadow: '0 5px 15px rgba(255, 0, 127, 0.3)',
-            fontSize: '0.95rem',
-            fontFamily: 'var(--font-heading)'
-          }}>
-            lets talk 🗣️
-          </Link>
-          
-          <Link to="/" style={{
-            color: 'white',
-            textDecoration: 'none',
-            fontWeight: 600,
-            fontSize: '0.95rem',
+        
+        {/* LOGO CARD */}
+        <div className="clay-card" style={{
+          padding: '20px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 14,
+          background: 'white'
+        }}>
+          <AlexMascot size={44} state="idle" />
+          <div>
+            <h1 style={{ 
+              fontSize: '1.45rem', 
+              color: 'var(--secondary-purple)', 
+              fontWeight: 800,
+              lineHeight: 1.1 
+            }}>
+              CogniTrack
+            </h1>
+            <span style={{ 
+              fontSize: '0.75rem', 
+              color: 'var(--text-secondary)', 
+              fontWeight: 600,
+              letterSpacing: '0.2px'
+            }}>
+              Your Voice Companion
+            </span>
+          </div>
+        </div>
+
+        {/* COMPANION PROFILE CARD */}
+        <div className="clay-card" style={{
+          padding: '18px 24px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 16,
+          background: 'white'
+        }}>
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: '50%',
+            backgroundColor: '#FFD6E7',
+            border: '2px solid white',
             display: 'flex',
             alignItems: 'center',
-            gap: 8,
-            padding: '10px 14px',
-            borderRadius: 8,
-            background: location.pathname === '/' ? 'rgba(255,255,255,0.08)' : 'transparent',
-            transition: 'background 0.2s',
-            fontFamily: 'var(--font-body)'
+            justifyContent: 'center',
+            fontSize: '1.2rem',
+            fontWeight: 800,
+            color: 'var(--secondary-purple)',
+            boxShadow: '0 4px 10px rgba(157, 123, 255, 0.1)'
           }}>
-            Trends 📊
+            {userInitial}
+          </div>
+          <div>
+            <div style={{ 
+              fontSize: '0.62rem', 
+              color: 'var(--secondary-purple)', 
+              fontWeight: 800, 
+              letterSpacing: '0.8px',
+              textTransform: 'uppercase'
+            }}>
+              COMPANION
+            </div>
+            <h3 style={{ fontSize: '1rem', color: 'var(--text-primary)', fontWeight: 700 }}>
+              Hello, {currentUser}!
+            </h3>
+          </div>
+        </div>
+
+        {/* NAVIGATION BUTTONS CARD */}
+        <div className="clay-card" style={{
+          padding: '16px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 8,
+          background: 'white',
+          flex: 1
+        }}>
+          <Link 
+            to="/" 
+            className={`clay-btn-nav ${location.pathname === '/' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.15rem' }}>🎛️</span> Dashboard
           </Link>
-        </nav>
+          
+          <Link 
+            to="/checkin" 
+            className={`clay-btn-nav ${location.pathname === '/checkin' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.15rem' }}>🎙️</span> Daily Check-In
+          </Link>
 
-        {/* History Logs */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 12, overflow: 'hidden' }}>
-          <h4 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'var(--font-body)' }}>
-            History Logs
-          </h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, overflowY: 'auto', paddingRight: 4 }}>
-            {sessions.length > 0 ? (
-              [...sessions].reverse().map((s, idx) => (
-                <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
-                  <button 
-                    onClick={() => setExpandedSessionIdx(expandedSessionIdx === idx ? null : idx)}
-                    className="btn-press"
-                    style={{
-                      width: '100%',
-                      textAlign: 'left',
-                      padding: '12px 14px',
-                      borderRadius: 12,
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
-                      color: 'white',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      outline: 'none',
-                      fontSize: '0.8rem',
-                      fontFamily: 'var(--font-body)'
-                    }}
-                  >
-                    <span style={{ fontWeight: 700, color: 'var(--accent-orange)' }}>
-                      🗓️ {s.date}
-                    </span>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      {s.emotional_valence >= 0 ? "😊" : "😔"}
-                      <span style={{ 
-                        fontSize: '0.65rem', 
-                        transform: expandedSessionIdx === idx ? 'rotate(180deg)' : 'rotate(0deg)', 
-                        transition: 'transform 0.2s',
-                        color: 'var(--text-secondary)'
-                      }}>
-                        ▼
-                      </span>
-                    </span>
-                  </button>
-                  
-                  {expandedSessionIdx === idx && (
-                    <div style={{
-                      padding: '14px',
-                      borderRadius: 12,
-                      background: 'rgba(20, 20, 45, 0.6)',
-                      border: '1px solid rgba(255, 255, 255, 0.04)',
-                      fontSize: '0.78rem',
-                      fontFamily: 'var(--font-body)',
-                      color: 'var(--text-primary)',
-                      lineHeight: 1.5,
-                      animation: 'slideInUp 0.3s ease',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 12
-                    }}>
-                      {/* 1. Complete Chat History */}
-                      {s.conversation_history && s.conversation_history.length > 0 && (
-                        <div>
-                          <strong style={{ color: 'var(--accent-teal)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6 }}>
-                            💬 Dialogue History
-                          </strong>
-                          <div style={{
-                            maxHeight: '130px',
-                            overflowY: 'auto',
-                            background: 'rgba(0, 0, 0, 0.2)',
-                            borderRadius: '8px',
-                            padding: '8px 10px',
-                            border: '1px solid rgba(255,255,255,0.04)',
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: 8
-                          }}>
-                            {s.conversation_history.map((msg, midx) => (
-                              <div key={midx} style={{ lineHeight: 1.35 }}>
-                                <span style={{ 
-                                  fontWeight: 800, 
-                                  fontSize: '0.62rem', 
-                                  color: msg.role === 'user' ? 'var(--accent-teal)' : 'var(--accent-orange)',
-                                  display: 'block',
-                                  letterSpacing: '0.3px',
-                                  marginBottom: 2
-                                }}>
-                                  {msg.role === 'user' ? 'YOU' : 'ALEX'}
-                                </span>
-                                <span style={{ color: '#E2E8F0', fontSize: '0.72rem' }}>
-                                  {msg.content}
-                                </span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+          <Link 
+            to="/history" 
+            className={`clay-btn-nav ${location.pathname === '/history' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.15rem' }}>🗓️</span> History Logs
+          </Link>
 
-                      {/* 2. Personal Report Sections */}
-                      {s.report && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                          <strong style={{ color: 'var(--accent-pink)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block' }}>
-                            📝 Personal Report
-                          </strong>
-                          {parseReport(s.report).map((card) => (
-                            <div key={card.key} style={{
-                              padding: '8px 10px',
-                              borderRadius: 8,
-                              background: 'rgba(255, 255, 255, 0.02)',
-                              borderLeft: `3px solid ${card.border || 'var(--accent-purple)'}`,
-                              fontSize: '0.72rem'
-                            }}>
-                              <strong style={{ color: 'white', display: 'block', marginBottom: 4 }}>
-                                {card.title}
-                              </strong>
-                              <div style={{ color: '#CBD5E1', whiteSpace: 'pre-line', lineHeight: 1.45 }}>
-                                {card.content}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '10px 0', fontSize: '0.85rem', fontFamily: 'var(--font-body)' }}>
-                No logs yet.
-              </div>
-            )}
+          <Link 
+            to="/reports" 
+            className={`clay-btn-nav ${location.pathname === '/reports' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.15rem' }}>📝</span> AI Reports
+          </Link>
+
+          <Link 
+            to="/trends" 
+            className={`clay-btn-nav ${location.pathname === '/trends' ? 'active' : ''}`}
+          >
+            <span style={{ fontSize: '1.15rem' }}>📊</span> Trends & Baselines
+          </Link>
+
+          {/* Spacer */}
+          <div style={{ flex: 1 }} />
+
+          {/* PREMIUM UPGRADE PROMO CARD */}
+          <div style={{
+            background: 'var(--cream)',
+            border: '2px dashed #BFA2FF',
+            borderRadius: '20px',
+            padding: '16px',
+            textAlign: 'center',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10
+          }}>
+            <h4 style={{ fontSize: '0.85rem', color: 'var(--secondary-purple)', fontWeight: 800 }}>
+              Upgrade to Premium 🌟
+            </h4>
+            <p style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', lineHeight: 1.4 }}>
+              Get unlimited voice entries & deep analysis reports.
+            </p>
+            <button className="clay-btn-cta" style={{ padding: '8px 16px', fontSize: '0.75rem', borderBottomWidth: '3px' }}>
+              Go Premium
+            </button>
           </div>
         </div>
       </aside>
 
-      <main style={{
-        maxWidth: 800,
-        marginLeft: sidebarOpen ? 340 : 'auto',
-        marginRight: 'auto',
-        padding: '100px 40px 60px',
-        position: 'relative',
-        zIndex: 10,
-        transition: 'margin-left 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}>
-        <Routes>
-          <Route path="/" element={<Dashboard sessions={sessions} loading={loading} />} />
-          <Route path="/checkin" element={<Checkin userId={userId} onRefreshHistory={fetchHistory} />} />
-        </Routes>
-      </main>
+      {/* MAIN LAYOUT WRAPPER */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: '30px 40px 30px 20px', overflowX: 'hidden' }}>
+        
+        {/* TOP FLOATING NAVIGATION */}
+        <header className="clay-card" style={{
+          padding: '12px 24px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          background: 'white',
+          marginBottom: 30
+        }}>
+          {/* Search bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, maxWidth: 450 }}>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>🔍</span>
+            <input 
+              type="text" 
+              placeholder="Search check-ins or reports..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                border: 'none',
+                outline: 'none',
+                width: '100%',
+                fontSize: '0.85rem',
+                color: 'var(--text-primary)',
+                fontFamily: 'var(--font-body)',
+                fontWeight: 500
+              }}
+            />
+          </div>
+
+          {/* Right Header items */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            {/* Notification bell */}
+            <button className="btn-press" style={{
+              width: 42,
+              height: 42,
+              borderRadius: '50%',
+              backgroundColor: 'var(--bg-light)',
+              border: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.05rem',
+              cursor: 'pointer'
+            }}>
+              🔔
+            </button>
+            
+            {/* Sign Out Button */}
+            <button 
+              onClick={onSignOut}
+              className="clay-btn-cta" 
+              style={{ 
+                padding: '8px 16px', 
+                fontSize: '0.85rem', 
+                backgroundColor: 'white', 
+                color: 'var(--text-primary)',
+                border: '2px solid var(--bg-light)',
+                borderBottom: '4px solid #DDEEFF',
+                boxShadow: 'none',
+                background: 'white'
+              }}
+            >
+              🚪 Sign Out
+            </button>
+          </div>
+        </header>
+
+        {/* DYNAMIC SCREEN ROUTING */}
+        <main style={{ flex: 1, minHeight: 0 }}>
+          <Routes>
+            <Route 
+              path="/" 
+              element={<Dashboard sessions={filteredSessions} loading={loading} currentUser={currentUser} />} 
+            />
+            
+            <Route 
+              path="/checkin" 
+              element={<Checkin userId={userId} onRefreshHistory={fetchHistory} currentUser={currentUser} />} 
+            />
+
+            {/* Timelines Route */}
+            <Route 
+              path="/history" 
+              element={
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
+                    🗓️ History Logs ({filteredSessions.length} listed)
+                  </h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {filteredSessions.length > 0 ? (
+                      [...filteredSessions].reverse().map((s, idx) => (
+                        <div key={idx} className="clay-card" style={{ padding: 24, background: 'white' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                            <strong style={{ color: 'var(--secondary-purple)', fontSize: '1rem', fontFamily: 'var(--font-heading)' }}>
+                              🗓️ Check-In: {s.date}
+                            </strong>
+                            <span style={{
+                              padding: '4px 10px',
+                              borderRadius: 12,
+                              backgroundColor: s.emotional_valence >= 0 ? 'var(--soft-green)' : 'var(--soft-pink)',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              color: s.emotional_valence >= 0 ? '#1b5e20' : '#b71c1c'
+                            }}>
+                              {s.emotional_valence >= 0 ? "😊 Calm Breeze" : "😔 Heavy Heart"}
+                            </span>
+                          </div>
+                          
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {/* Dialogue list */}
+                            {s.conversation_history && s.conversation_history.length > 0 && (
+                              <div style={{ background: 'var(--bg-light)', borderRadius: 16, padding: '12px 16px' }}>
+                                <strong style={{ fontSize: '0.8rem', color: 'var(--text-primary)', display: 'block', marginBottom: 8 }}>
+                                  💬 Dialogue Script
+                                </strong>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                  {s.conversation_history.map((msg, midx) => (
+                                    <div key={midx} style={{ fontSize: '0.8rem', lineHeight: 1.4 }}>
+                                      <span style={{ fontWeight: 800, color: msg.role === 'user' ? 'var(--secondary-purple)' : '#BFA2FF' }}>
+                                        {msg.role === 'user' ? 'You: ' : 'Alex: '}
+                                      </span>
+                                      <span style={{ color: 'var(--text-primary)' }}>{msg.content}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Metrics indicators */}
+                            <div style={{ display: 'flex', gap: 20, fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                              <div>🗣️ Speech Pace: <strong style={{ color: 'var(--text-primary)' }}>{s.speech_rate_wpm ? s.speech_rate_wpm.toFixed(0) : 0} WPM</strong></div>
+                              <div>🧩 Topic Coherence: <strong style={{ color: 'var(--text-primary)' }}>{s.semantic_coherence ? (s.semantic_coherence * 100).toFixed(0) : 0}%</strong></div>
+                              <div>🌸 Vocabulary Richness: <strong style={{ color: 'var(--text-primary)' }}>{s.type_token_ratio ? s.type_token_ratio.toFixed(2) : '0.00'}</strong></div>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="clay-card" style={{ padding: '60px 20px', textAlign: 'center', background: 'white' }}>
+                        <AlexMascot size={72} state="idle" style={{ marginBottom: 16 }} />
+                        <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>No check-in logs found.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              } 
+            />
+
+            {/* Reports Route */}
+            <Route 
+              path="/reports" 
+              element={
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
+                    📝 AI Reports History
+                  </h2>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                    {filteredSessions.length > 0 ? (
+                      [...filteredSessions].reverse().map((s, idx) => (
+                        s.report ? (
+                          <div key={idx} className="clay-card" style={{ padding: 24, background: 'white' }}>
+                            <h3 style={{ fontSize: '1.1rem', color: 'var(--text-primary)', marginBottom: 16, borderBottom: '2px dashed var(--bg-light)', paddingBottom: 10 }}>
+                              📝 Check-In Report — {s.date}
+                            </h3>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                              {parseReport(s.report).map((card) => (
+                                <div key={card.key} style={{
+                                  padding: 16,
+                                  borderRadius: 16,
+                                  background: 'var(--bg-light)',
+                                  borderLeft: `5px solid ${card.border}`,
+                                  fontSize: '0.82rem'
+                                }}>
+                                  <strong style={{ color: 'var(--text-primary)', display: 'block', marginBottom: 6, fontSize: '0.85rem' }}>
+                                    {card.title}
+                                  </strong>
+                                  <p style={{ color: 'var(--text-primary)', whiteSpace: 'pre-line', lineHeight: 1.5 }}>
+                                    {card.content}
+                                  </p>
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 14, textAlign: 'right', fontSize: '0.85rem', fontWeight: 700, color: 'var(--secondary-purple)' }}>
+                              – Alex 💜
+                            </div>
+                          </div>
+                        ) : null
+                      ))
+                    ) : (
+                      <div className="clay-card" style={{ padding: '60px 20px', textAlign: 'center', background: 'white' }}>
+                        <AlexMascot size={72} state="idle" style={{ marginBottom: 16 }} />
+                        <p style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>No reports generated yet.</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              } 
+            />
+
+            {/* Trends Route */}
+            <Route 
+              path="/trends" 
+              element={
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
+                    📊 Detailed Trends & Baselines
+                  </h2>
+                  <Dashboard sessions={sessions} loading={loading} currentUser={currentUser} onlyCharts={true} />
+                </div>
+              } 
+            />
+          </Routes>
+        </main>
+      </div>
     </div>
   )
 }
 
 export default function App() {
-  const userId = "user_001"
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return sessionStorage.getItem('isLoggedIn') === 'true'
+  })
+  const [currentUser, setCurrentUser] = useState(() => {
+    return sessionStorage.getItem('username') || 'helna'
+  })
+  
+  const [usernameInput, setUsernameInput] = useState("")
+
+  const handleLogin = (e) => {
+    e.preventDefault()
+    const name = usernameInput.trim() || 'helna'
+    setIsLoggedIn(true)
+    setCurrentUser(name)
+    sessionStorage.setItem('isLoggedIn', 'true')
+    sessionStorage.setItem('username', name)
+  }
+
+  const handleSignOut = () => {
+    setIsLoggedIn(false)
+    sessionStorage.removeItem('isLoggedIn')
+    sessionStorage.removeItem('username')
+  }
+
+  // WELCOME SCREEN (Auth layout matching Apple/Duolingo clay style)
+  if (!isLoggedIn) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: 'var(--bg-light)',
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 20,
+        overflow: 'hidden'
+      }}>
+        {/* Floating Clouds Background */}
+        <div className="bg-clouds">
+          <div className="cloud cloud-1"></div>
+          <div className="cloud cloud-2"></div>
+        </div>
+
+        {/* Decorative Plant elements drawn in SVGs */}
+        <svg style={{ position: 'absolute', left: 40, bottom: 20, width: 150, height: 250, opacity: 0.7 }} viewBox="0 0 100 200">
+          <path d="M50,200 Q20,130 50,60" fill="none" stroke="var(--primary-lavender)" strokeWidth="6" strokeLinecap="round" />
+          <path d="M50,150 Q10,120 20,100" fill="none" stroke="#D8F5D0" strokeWidth="12" strokeLinecap="round" />
+          <path d="M50,110 Q90,90 80,70" fill="none" stroke="#DDEEFF" strokeWidth="12" strokeLinecap="round" />
+          <path d="M50,70 Q10,50 30,30" fill="none" stroke="#FFF1B8" strokeWidth="10" strokeLinecap="round" />
+        </svg>
+
+        <svg style={{ position: 'absolute', right: 40, top: 40, width: 180, height: 250, opacity: 0.6 }} viewBox="0 0 100 200">
+          <path d="M50,0 Q80,70 50,140" fill="none" stroke="var(--primary-lavender)" strokeWidth="5" strokeLinecap="round" />
+          <path d="M50,50 Q90,80 80,100" fill="none" stroke="#FFD6E7" strokeWidth="14" strokeLinecap="round" />
+          <path d="M50,90 Q10,110 20,130" fill="none" stroke="#D8F5D0" strokeWidth="12" strokeLinecap="round" />
+        </svg>
+
+        {/* Welcome Card */}
+        <div className="clay-card" style={{
+          width: '100%',
+          maxWidth: 440,
+          padding: '40px 30px',
+          textAlign: 'center',
+          backgroundColor: 'white',
+          zIndex: 10,
+          position: 'relative'
+        }}>
+          {/* Mascot Header */}
+          <div style={{ marginBottom: 20 }}>
+            <AlexMascot size={110} state="speaking" />
+          </div>
+
+          <h2 style={{
+            fontSize: '1.8rem',
+            fontWeight: 800,
+            color: 'var(--text-primary)',
+            marginBottom: 8,
+            fontFamily: 'var(--font-heading)'
+          }}>
+            Welcome Back!
+          </h2>
+          <p style={{
+            fontSize: '0.85rem',
+            color: 'var(--text-secondary)',
+            lineHeight: 1.6,
+            marginBottom: 30,
+            padding: '0 10px'
+          }}>
+            Sign in to start your friendly Daily Voice Check-in with Alex.
+          </p>
+
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ textAlign: 'left' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: 6, paddingLeft: 6 }}>
+                What's your name?
+              </label>
+              <input 
+                type="text" 
+                className="clay-input"
+                placeholder="e.g. helna"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                required
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              className="clay-btn-cta"
+              style={{ width: '100%', padding: '16px', fontSize: '1rem', marginTop: 10 }}
+            >
+              Sign In ⚡
+            </button>
+          </form>
+
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: 24, fontWeight: 600 }}>
+            Don't have an account? <span style={{ color: 'var(--secondary-purple)', cursor: 'pointer' }}>Register locally</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Router>
-      <MainLayout userId={userId} />
+      <MainLayout userId="user_001" currentUser={currentUser} onSignOut={handleSignOut} />
     </Router>
   )
 }
