@@ -4,7 +4,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import axios from "axios"
 import AlexMascot from "./AlexMascot"
 
-const API = "http://localhost:8000"
+const API = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "")
+
 
 // Typewriter Component for Alex's question
 function TypewriterText({ text, speed = 20, onComplete }) {

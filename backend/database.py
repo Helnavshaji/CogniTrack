@@ -6,10 +6,18 @@ import os
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/sessions.db")
 
-os.makedirs("data", exist_ok=True)
-engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+if DATABASE_URL.startswith("sqlite"):
+    os.makedirs("data", exist_ok=True)
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL)
+
 SessionLocal = sessionmaker(bind=engine)
 Base = declarative_base()
+
 
 class Session(Base):
     __tablename__ = "sessions"

@@ -6,7 +6,8 @@ import Dashboard from './Dashboard'
 import Checkin from './Checkin'
 import AlexMascot from './AlexMascot'
 
-const API = "http://localhost:8000"
+const API = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/$/, "")
+
 
 const PageTransition = ({ children }) => (
   <motion.div
