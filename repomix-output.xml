@@ -172,13 +172,6 @@ DATABASE_URL=sqlite:///./data/sessions.db
 ALLOWED_ORIGINS=*
 </file>
 
-<file path="frontend/.env.example">
-# Frontend Environment Variables (Vite)
-# When deploying to Vercel, set this variable to your live Render backend URL
-# Example: VITE_API_URL=https://cognitrack-backend.onrender.com
-VITE_API_URL=http://localhost:8000
-</file>
-
 <file path="backend/audio_features.py">
 import librosa
 import numpy as np
@@ -322,72 +315,6 @@ def extract_linguistic_biomarkers(text: str) -> dict:
     }
 </file>
 
-<file path="backend/database.py">
-from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Text, JSON
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import os
-
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/sessions.db")
-
-if DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
-
-if DATABASE_URL.startswith("sqlite"):
-    os.makedirs("data", exist_ok=True)
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
-else:
-    engine = create_engine(DATABASE_URL)
-
-SessionLocal = sessionmaker(bind=engine)
-Base = declarative_base()
-
-
-class Session(Base):
-    __tablename__ = "sessions"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(String, index=True)
-    session_id = Column(String, unique=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    transcript = Column(Text)
-    audio_path = Column(String)
-    speech_rate_wpm = Column(Float)
-    pause_count = Column(Integer)
-    mean_pause_duration_s = Column(Float)
-    pause_ratio = Column(Float)
-    energy_mean = Column(Float)
-    energy_variability = Column(Float)
-    pitch_mean_hz = Column(Float)
-    pitch_variability = Column(Float)
-    avg_sentence_length = Column(Float)
-    flesch_kincaid_grade = Column(Float)
-    type_token_ratio = Column(Float)
-    filler_rate = Column(Float)
-    semantic_coherence = Column(Float)
-    emotional_valence = Column(Float)
-    self_reference_ratio = Column(Float)
-    ai_analysis = Column(JSON)
-    alert_triggered = Column(String, nullable=True)
-
-class UserBaseline(Base):
-    __tablename__ = "baselines"
-    id = Column(Integer, primary_key=True)
-    user_id = Column(String, unique=True, index=True)
-    updated_at = Column(DateTime, default=datetime.utcnow)
-    session_count = Column(Integer, default=0)
-    baseline_data = Column(JSON)
-
-Base.metadata.create_all(engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-</file>
-
 <file path="backend/drift_detection.py">
 import numpy as np
 from typing import Optional
@@ -508,94 +435,6 @@ def _interpret_alerts(alerts: list) -> str:
     }
     messages = [descriptions.get(a["metric"], a["metric"]) for a in alerts]
     return "; ".join(messages)
-</file>
-
-<file path="backend/requirements.txt">
-fastapi==0.109.0
-uvicorn==0.27.0
-anthropic==0.18.0
-spacy==3.7.2
-librosa==0.10.1
-scipy==1.12.0
-numpy==1.26.3
-sqlalchemy==2.0.25
-psycopg2-binary==2.9.9
-pydantic==2.5.3
-python-multipart==0.0.7
-python-dotenv==1.0.0
-sounddevice==0.4.6
-soundfile==0.12.1
-textstat==0.7.3
-groq
-</file>
-
-<file path="backend/transcription.py">
-import os
-import uuid
-from datetime import datetime
-from groq import Groq
-
-# Initialize Groq client using environment variable
-def get_groq_client():
-    return Groq(api_key=os.getenv("GROQ_API_KEY"))
-
-def transcribe_audio(audio_file_path: str) -> dict:
-    """
-    Transcribes recorded audio using Groq's fast cloud Whisper API.
-    Returns the full text transcript along with word-level timestamps.
-    """
-    try:
-        client = get_groq_client()
-        with open(audio_file_path, "rb") as file:
-            transcription = client.audio.transcriptions.create(
-                file=(os.path.basename(audio_file_path), file.read()),
-                model="whisper-large-v3-turbo",
-                response_format="verbose_json",
-                timestamp_granularities=["word"],
-                language="en"
-            )
-
-        # Extract word timings for speech rate & pause calculations
-        words_with_timing = []
-        raw_words = getattr(transcription, "words", []) or []
-
-        for item in raw_words:
-            word = getattr(item, "word", "") if hasattr(item, "word") else item.get("word", "")
-            start = getattr(item, "start", 0.0) if hasattr(item, "start") else item.get("start", 0.0)
-            end = getattr(item, "end", 0.0) if hasattr(item, "end") else item.get("end", 0.0)
-            
-            words_with_timing.append({
-                "word": str(word).strip(),
-                "start": float(start),
-                "end": float(end)
-            })
-
-        transcript_text = getattr(transcription, "text", "").strip()
-
-        return {
-            "text": transcript_text,
-            "words": words_with_timing,
-            "language": "en",
-            "duration": words_with_timing[-1]["end"] if words_with_timing else 0
-        }
-
-    except Exception as e:
-        print(f"Transcription failed: {e}")
-        return {
-            "text": "",
-            "words": [],
-            "language": "en",
-            "duration": 0
-        }
-
-def save_audio_file(audio_bytes: bytes, user_id: str) -> str:
-    """Saves incoming audio bytes to a local file in the audio directory."""
-    os.makedirs("audio", exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"audio/{user_id}_{timestamp}_{uuid.uuid4().hex[:8]}.wav"
-    with open(filename, "wb") as f:
-        f.write(audio_bytes)
-    return filename
 </file>
 
 <file path="frontend/public/favicon.svg">
@@ -835,6 +674,13 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
+</file>
+
+<file path="frontend/.env.example">
+# Frontend Environment Variables (Vite)
+# When deploying to Vercel, set this variable to your live Render backend URL
+# Example: VITE_API_URL=https://cognitrack-backend.onrender.com
+VITE_API_URL=http://localhost:8000
 </file>
 
 <file path="frontend/.gitignore">
@@ -2553,6 +2399,236 @@ Replace values with what actually applies. detected_concerns can include: sleep,
         }
 </file>
 
+<file path="backend/database.py">
+from sqlalchemy import create_engine, Column, Integer, Float, String, DateTime, Text, JSON
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+import os
+
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/sessions.db")
+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+if DATABASE_URL.startswith("sqlite"):
+    os.makedirs("data", exist_ok=True)
+    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+else:
+    engine = create_engine(DATABASE_URL)
+
+SessionLocal = sessionmaker(bind=engine)
+Base = declarative_base()
+
+
+class Session(Base):
+    __tablename__ = "sessions"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String, index=True)
+    session_id = Column(String, unique=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    transcript = Column(Text)
+    audio_path = Column(String)
+    speech_rate_wpm = Column(Float)
+    pause_count = Column(Integer)
+    mean_pause_duration_s = Column(Float)
+    pause_ratio = Column(Float)
+    energy_mean = Column(Float)
+    energy_variability = Column(Float)
+    pitch_mean_hz = Column(Float)
+    pitch_variability = Column(Float)
+    avg_sentence_length = Column(Float)
+    flesch_kincaid_grade = Column(Float)
+    type_token_ratio = Column(Float)
+    filler_rate = Column(Float)
+    semantic_coherence = Column(Float)
+    emotional_valence = Column(Float)
+    self_reference_ratio = Column(Float)
+    ai_analysis = Column(JSON)
+    alert_triggered = Column(String, nullable=True)
+
+class UserBaseline(Base):
+    __tablename__ = "baselines"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(String, unique=True, index=True)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    session_count = Column(Integer, default=0)
+    baseline_data = Column(JSON)
+
+Base.metadata.create_all(engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+</file>
+
+<file path="backend/requirements.txt">
+fastapi==0.109.0
+uvicorn==0.27.0
+anthropic==0.18.0
+spacy==3.7.2
+librosa==0.10.1
+scipy==1.12.0
+numpy==1.26.3
+sqlalchemy==2.0.25
+psycopg2-binary==2.9.9
+pydantic==2.5.3
+python-multipart==0.0.7
+python-dotenv==1.0.0
+sounddevice==0.4.6
+soundfile==0.12.1
+textstat==0.7.3
+groq
+</file>
+
+<file path="backend/transcription.py">
+import os
+import uuid
+from datetime import datetime
+from groq import Groq
+
+# Initialize Groq client using environment variable
+def get_groq_client():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
+
+def transcribe_audio(audio_file_path: str) -> dict:
+    """
+    Transcribes recorded audio using Groq's fast cloud Whisper API.
+    Returns the full text transcript along with word-level timestamps.
+    """
+    try:
+        client = get_groq_client()
+        with open(audio_file_path, "rb") as file:
+            transcription = client.audio.transcriptions.create(
+                file=(os.path.basename(audio_file_path), file.read()),
+                model="whisper-large-v3-turbo",
+                response_format="verbose_json",
+                timestamp_granularities=["word"],
+                language="en"
+            )
+
+        # Extract word timings for speech rate & pause calculations
+        words_with_timing = []
+        raw_words = getattr(transcription, "words", []) or []
+
+        for item in raw_words:
+            word = getattr(item, "word", "") if hasattr(item, "word") else item.get("word", "")
+            start = getattr(item, "start", 0.0) if hasattr(item, "start") else item.get("start", 0.0)
+            end = getattr(item, "end", 0.0) if hasattr(item, "end") else item.get("end", 0.0)
+            
+            words_with_timing.append({
+                "word": str(word).strip(),
+                "start": float(start),
+                "end": float(end)
+            })
+
+        transcript_text = getattr(transcription, "text", "").strip()
+
+        return {
+            "text": transcript_text,
+            "words": words_with_timing,
+            "language": "en",
+            "duration": words_with_timing[-1]["end"] if words_with_timing else 0
+        }
+
+    except Exception as e:
+        print(f"Transcription failed: {e}")
+        return {
+            "text": "",
+            "words": [],
+            "language": "en",
+            "duration": 0
+        }
+
+def save_audio_file(audio_bytes: bytes, user_id: str) -> str:
+    """Saves incoming audio bytes to a local file in the audio directory."""
+    os.makedirs("audio", exist_ok=True)
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"audio/{user_id}_{timestamp}_{uuid.uuid4().hex[:8]}.wav"
+    with open(filename, "wb") as f:
+        f.write(audio_bytes)
+    return filename
+</file>
+
+<file path="frontend/package.json">
+{
+  "name": "frontend",
+  "private": true,
+  "homepage": "https://Helnavshaji.github.io/CogniTrack",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "axios": "^1.16.1",
+    "framer-motion": "^12.40.0",
+    "gsap": "^3.15.0",
+    "lenis": "^1.3.23",
+    "leva": "^0.10.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "react-router-dom": "^7.16.0",
+    "recharts": "^3.8.1",
+    "three": "^0.184.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "eslint": "^10.3.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "gh-pages": "^6.3.0",
+    "globals": "^17.6.0",
+    "vite": "^8.0.12"
+  }
+}
+</file>
+
+<file path="frontend/vite.config.js">
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vite.dev/config/
+export default defineConfig({
+  base: "/CogniTrack/",
+  plugins: [react()],
+})
+</file>
+
+<file path="requirements.txt">
+fastapi==0.109.0
+uvicorn==0.27.0
+openai-whisper
+anthropic==0.18.0
+spacy==3.7.2
+librosa==0.10.1
+scipy==1.12.0
+numpy==1.26.3
+sqlalchemy==2.0.25
+pydantic==2.5.3
+python-multipart==0.0.7
+python-dotenv==1.0.0
+sounddevice==0.4.6
+soundfile==0.12.1
+transformers==4.37.0
+torch==2.1.2
+textstat==0.7.3
+groq
+</file>
+
 <file path="backend/main.py">
 from fastapi import FastAPI, UploadFile, File, Form, Depends
 from fastapi.middleware.cors import CORSMiddleware
@@ -2802,82 +2878,6 @@ async def get_baseline(user_id: str, db: DBSession = Depends(get_db)):
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-</file>
-
-<file path="frontend/package.json">
-{
-  "name": "frontend",
-  "private": true,
-  "homepage": "https://Helnavshaji.github.io/CogniTrack",
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
-  },
-  "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.1",
-    "axios": "^1.16.1",
-    "framer-motion": "^12.40.0",
-    "gsap": "^3.15.0",
-    "lenis": "^1.3.23",
-    "leva": "^0.10.1",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "react-router-dom": "^7.16.0",
-    "recharts": "^3.8.1",
-    "three": "^0.184.0"
-  },
-  "devDependencies": {
-    "@eslint/js": "^10.0.1",
-    "@types/react": "^19.2.14",
-    "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^6.0.1",
-    "eslint": "^10.3.0",
-    "eslint-plugin-react-hooks": "^7.1.1",
-    "eslint-plugin-react-refresh": "^0.5.2",
-    "gh-pages": "^6.3.0",
-    "globals": "^17.6.0",
-    "vite": "^8.0.12"
-  }
-}
-</file>
-
-<file path="frontend/vite.config.js">
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vite.dev/config/
-export default defineConfig({
-  base: "/CogniTrack/",
-  plugins: [react()],
-})
-</file>
-
-<file path="requirements.txt">
-fastapi==0.109.0
-uvicorn==0.27.0
-openai-whisper
-anthropic==0.18.0
-spacy==3.7.2
-librosa==0.10.1
-scipy==1.12.0
-numpy==1.26.3
-sqlalchemy==2.0.25
-pydantic==2.5.3
-python-multipart==0.0.7
-python-dotenv==1.0.0
-sounddevice==0.4.6
-soundfile==0.12.1
-transformers==4.37.0
-torch==2.1.2
-textstat==0.7.3
-groq
 </file>
 
 <file path="frontend/src/AlexMascot.jsx">
@@ -3145,75 +3145,98 @@ export default function AlexMascot({ size = 100, state = "idle", style = {} }) {
 </file>
 
 <file path="README.md">
-# CogniTrack 🧠
+# CogniTrack
 
-> **Live Demo**: 👉 **[helnavshaji.github.io/CogniTrack/](https://helnavshaji.github.io/CogniTrack/)** 👈
+> **Live Demo**: **[helnavshaji.github.io/CogniTrack/](https://helnavshaji.github.io/CogniTrack/)**
 
-CogniTrack is an AI-powered cognitive health monitor and daily conversational companion. Designed as a friendly check-in assistant named **Alex**, the website conducts short, 4-question voice or text check-ins, extracts vocal and text biomarkers (speech pace, topic coherence, emotional valence, vocabulary richness), and generates a warm, personalized report filled with actionable advice, daily goals, and friendly validations.
+CogniTrack is an AI-powered cognitive health monitor and daily conversational companion. Designed as a friendly check-in assistant named **Alex**, the application conducts short 4-question voice or text check-ins, extracts vocal and text biomarkers (speech pace, topic coherence, emotional valence, vocabulary richness), and generates a warm, personalized report filled with actionable advice, daily goals, and friendly validations.
 
 ---
 
-## 📸 Screenshots
+## Screenshots
 
-### 🔑 1. Welcome Screen
+### 1. Welcome Screen
 *Sign in to start your friendly mind check-in with Alex, featuring a clean claymorphic login interface.*
 ![Login Welcome Screen](screenshots/login.png)
 
-### 📊 2. Companion Dashboard
+### 2. Companion Dashboard
 *Track your check-in counts, streaks, average mood baselines, and complete recent journal logs in a single interactive dashboard.*
 ![Dashboard Screen](screenshots/dashboard.png)
 
-### 🎙️ 3. Interactive Check-In
+### 3. Interactive Check-In
 *Talk or type with Alex, featuring real-time visual companion mascot animations and an offline demo fallback badge.*
 ![Check-in Screen](screenshots/checkin_offline.png)
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-*   **🎙️ Interactive Voice Check-in**: A conversational voice interface equipped with a responsive 2D SVG companion mascot that reacts and gestures based on whether it is listening, thinking, speaking, or comfort-hugging.
-*   **⌨️ Typed Response Toggle**: Don't want to speak? Toggle typing mode to type your responses through a custom claymorphic input panel.
-*   **🎨 Premium Framer Motion Animations**: Organic spring-based page transitions, sidebar navigation floats, staggered card entries, pulsing mic wave glows, and floating star overlays.
-*   **📝 Best Friend Reports**: Generates a warm letter-style personal message at the end of each conversation containing:
-    *   💬 *How you seemed today* (Warm summaries referencing your words)
-    *   🌟 *What I noticed about you* (Positive reinforcement)
-    *   🤝 *Real talk from your friend* (3 concrete, helpful pieces of advice)
-    *   🎯 *Your one thing for tomorrow* (A tiny, specific micro-action)
-    *   💙 *I'm proud of you* (Warm validation)
-*   **📁 Sidebar History Logs**: Slides open to review all completed sessions, read-outs of dialogue logs, and past report cards.
-*   **📊 Multivariate Trends**: Interactive Recharts-based line graph tracking speaking pace (Words Per Minute), semantic coherence %, and emotional valence across days.
-*   **🚨 Cognitive Drift Detection**: Automatically monitors user biomarkers against their personal baseline over time to alert on noticeable changes (e.g. speaking slower, increased pauses, flatter vocal energy).
-*   **🟢 Standalone Offline Fallback**: Fully functional client-side fallback mode that runs entirely in the browser when the backend is offline—featuring browser-level speech recognition, client-side letter generation, and `localStorage` persistence.
+*   **Interactive Voice Check-in**: A conversational voice interface equipped with a responsive 2D SVG companion mascot that reacts and gestures based on whether it is listening, thinking, speaking, or comfort-hugging.
+*   **Typed Response Toggle**: Don't want to speak? Toggle typing mode to type your responses through a custom claymorphic input panel.
+*   **Premium Framer Motion Animations**: Organic spring-based page transitions, sidebar navigation floats, staggered card entries, pulsing mic wave glows, and floating star overlays.
+*   **Best Friend Reports**: Generates a warm letter-style personal message at the end of each conversation containing:
+    *   *How you seemed today* (Warm summaries referencing your words)
+    *   *What I noticed about you* (Positive reinforcement)
+    *   *Real talk from your friend* (3 concrete, helpful pieces of advice)
+    *   *Your one thing for tomorrow* (A tiny, specific micro-action)
+    *   *I'm proud of you* (Warm validation)
+*   **Sidebar History Logs**: Slides open to review all completed sessions, read-outs of dialogue logs, and past report cards.
+*   **Multivariate Trends**: Interactive Recharts-based line graph tracking speaking pace (Words Per Minute), semantic coherence %, and emotional valence across days.
+*   **Cognitive Drift Detection**: Automatically monitors user biomarkers against their personal baseline over time to alert on noticeable changes (e.g. speaking slower, increased pauses, flatter vocal energy).
+*   **Standalone Offline Fallback**: Fully functional client-side fallback mode that runs entirely in the browser when the backend is offline—featuring browser-level speech recognition, client-side letter generation, and localStorage persistence.
 
 ---
 
-## 🛠️ Technology Stack
+## Technology Stack
 
 ### Frontend (Client)
-*   **Vite + React**: Core website skeleton.
-*   **React Router**: Navigation routing with layout transitions.
-*   **Recharts**: Visualizes multivariate biomarker charts.
-*   **Framer Motion**: Delivers premium interactive spring animations and particle glows.
-*   **Web Speech API**: Transcribes microphone voice input directly in the browser when offline.
-*   **Axios**: Manages HTTP communications with the backend API.
-*   **CSS Variable Design System**: Premium soft-claymorphic theme with glowing highlights.
+*   **Vite + React**: Core user interface framework.
+*   **React Router**: Page routing and navigation.
+*   **Recharts**: Visualizes multivariate cognitive biomarker charts.
+*   **Framer Motion**: Provides fluid UI transitions and interactive animations.
+*   **Web Speech API**: Handles client-side speech recognition in offline demo mode.
+*   **Axios**: Manages API communication with the backend server.
+*   **CSS Variable Design System**: Soft-claymorphic theme with customizable design tokens.
 
 ### Backend (Server)
-*   **FastAPI**: High-performance backend API.
-*   **SQLAlchemy + SQLite**: Fast local database persistence.
-*   **Groq API (Llama-3.3-70b)**: Orchestrates conversational dialogue responses and generates session report summaries.
-*   **Numpy**: Computes cognitive drift scores and standard deviations for baseline metrics.
+*   **FastAPI**: High-performance asynchronous Python web framework.
+*   **SQLAlchemy**: Database ORM supporting PostgreSQL (cloud deployment) and SQLite (local development).
+*   **Groq API**:
+    *   `llama-3.3-70b-versatile` for real-time conversational responses and personal report generation.
+    *   `whisper-large-v3-turbo` for cloud-based audio transcription with word-level timestamps.
+*   **Numpy & Spacy**: Extracts linguistic biomarkers and calculates cognitive drift metrics.
 
 ---
 
-## 🚀 Getting Started
+## Deployment Configuration
+
+### Cloud Hosting Setup
+
+1.  **Backend (Render)**:
+    *   **Root Directory**: `backend`
+    *   **Build Command**: `pip install -r requirements.txt && python -m spacy download en_core_web_sm`
+    *   **Start Command**: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+    *   **Environment Variables**:
+        *   `GROQ_API_KEY`: Your Groq API key.
+        *   `DATABASE_URL`: PostgreSQL connection string (e.g. from Supabase or Neon). If omitted, defaults to local SQLite.
+        *   `ALLOWED_ORIGINS`: Set to your deployed Vercel frontend URL or `*`.
+
+2.  **Frontend (Vercel)**:
+    *   **Root Directory**: `frontend`
+    *   **Build Command**: `npm run build`
+    *   **Environment Variables**:
+        *   `VITE_API_URL`: URL of your deployed Render backend (e.g. `https://cognitrack-backend.onrender.com`).
+
+---
+
+## Local Development & Setup
 
 ### Prerequisites
-*   [Node.js](https://nodejs.org/) (v16+)
-*   [Python](https://www.python.org/) (v3.9+)
-*   Groq API Key (Set in `.env` file)
+*   Node.js (v16+)
+*   Python (v3.9+)
+*   Groq API Key
 
-### Setup & Installation
+### Setup Instructions
 
 1. **Clone the Repository**:
    ```bash
@@ -3221,41 +3244,52 @@ CogniTrack is an AI-powered cognitive health monitor and daily conversational co
    cd CogniTrack
    ```
 
-2. **Configure Environment Variables**:
-   Create a `.env` file in the project root:
+2. **Backend Setup**:
+   ```bash
+   cd backend
+   python -m venv venv
+   
+   # Windows
+   venv\Scripts\activate
+   # macOS / Linux
+   # source venv/bin/activate
+
+   pip install -r requirements.txt
+   python -m spacy download en_core_web_sm
+   ```
+
+   Create a `.env` file in the `backend` directory:
    ```env
    GROQ_API_KEY=your_groq_api_key_here
    DATABASE_URL=sqlite:///./data/sessions.db
+   ALLOWED_ORIGINS=*
    ```
 
-3. **Backend Setup**:
+   Run the backend server:
    ```bash
-   # Create and activate python virtual environment
-   python -m venv venv
-   venv\Scripts\activate # On macOS/Linux: source venv/bin/activate
-   
-   # Install dependencies
-   pip install -r requirements.txt
-   
-   # Start the FastAPI server
-   python backend/main.py
+   python main.py
    ```
 
-4. **Frontend Setup**:
+3. **Frontend Setup**:
    ```bash
-   cd frontend
-   
-   # Install node packages
+   cd ../frontend
    npm install
-   
-   # Run the Vite development server
+   ```
+
+   Create a `.env` file in the `frontend` directory:
+   ```env
+   VITE_API_URL=http://localhost:8000
+   ```
+
+   Run the development server:
+   ```bash
    npm run dev
    ```
-   Open **[http://localhost:5173](http://localhost:5173)** in your browser!
+   Open **http://localhost:5173** in your browser.
 
 ---
 
-## 🔒 License
+## License
 Distributed under the MIT License. See `LICENSE` for more information.
 </file>
 
@@ -3741,6 +3775,378 @@ export default function Dashboard({ sessions = [], loading, currentUser = "helna
 
     </div>
   )
+}
+</file>
+
+<file path="frontend/src/index.css">
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Caveat:wght@400;700&family=League+Script&display=swap');
+
+:root {
+  --bg-light: #F6F0FF;
+  --bg-card: #FFFFFF;
+  
+  /* Pastel Palette from Design Specification */
+  --primary-lavender: #BFA2FF;
+  --secondary-purple: #9D7BFF;
+  --soft-pink: #FFD6E7;
+  --cream: #FFF8F2;
+  --pastel-blue: #DDEEFF;
+  --pastel-yellow: #FFF1B8;
+  --soft-green: #D8F5D0;
+  
+  /* Text and details */
+  --text-primary: #2C2C4E;
+  --text-secondary: #48486A;
+  --border-glass: rgba(255, 255, 255, 0.7);
+  
+  --font-heading: 'Poppins', system-ui, sans-serif;
+  --font-body: 'Caveat', 'League Script', cursive;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
+}
+
+/* Claymorphism Cards */
+.clay-card {
+  background: var(--bg-card);
+  border-radius: 24px;
+  border: 3px solid #FFFFFF;
+  box-shadow: 0 10px 25px rgba(157, 123, 255, 0.07),
+              inset 3px 3px 5px rgba(255, 255, 255, 0.9),
+              inset -3px -3px 5px rgba(157, 123, 255, 0.04);
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+}
+.clay-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 30px rgba(157, 123, 255, 0.1),
+              inset 3px 3px 5px rgba(255, 255, 255, 0.9),
+              inset -3px -3px 5px rgba(157, 123, 255, 0.04);
+}
+
+/* Clay Button CTA (Duolingo-style pressable) */
+.clay-btn-cta {
+  background: linear-gradient(135deg, var(--primary-lavender) 0%, var(--secondary-purple) 100%);
+  color: white;
+  border-radius: 20px;
+  border: none;
+  border-bottom: 5px solid #845ef7;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  padding: 14px 28px;
+  box-shadow: 0 6px 15px rgba(157, 123, 255, 0.15);
+  transition: all 0.1s ease;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  outline: none;
+  text-decoration: none;
+}
+.clay-btn-cta:hover {
+  transform: translateY(1px);
+  border-bottom-width: 4px;
+  box-shadow: 0 4px 10px rgba(157, 123, 255, 0.15);
+}
+.clay-btn-cta:active {
+  transform: translateY(4px);
+  border-bottom-width: 0px;
+  box-shadow: 0 2px 4px rgba(157, 123, 255, 0.1);
+}
+
+/* Clay Button Navigation */
+.clay-btn-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 20px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 600;
+  font-family: var(--font-heading);
+  transition: all 0.2s ease;
+  border: 3px solid transparent;
+  cursor: pointer;
+  background: transparent;
+  outline: none;
+}
+.clay-btn-nav:hover {
+  color: var(--secondary-purple);
+  background: rgba(157, 123, 255, 0.04);
+}
+.clay-btn-nav.active {
+  background: var(--primary-lavender);
+  color: white;
+  box-shadow: 0 6px 12px rgba(157, 123, 255, 0.12),
+              inset 2px 2px 4px rgba(255, 255, 255, 0.4);
+  border-bottom: 4px solid var(--secondary-purple);
+}
+
+/* Clay Inputs */
+.clay-input {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 18px;
+  border: 3px solid #FFFFFF;
+  background: var(--bg-light);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-weight: 500;
+  box-shadow: inset 2px 2px 5px rgba(157, 123, 255, 0.05),
+              inset -2px -2px 5px rgba(255, 255, 255, 0.8),
+              0 2px 5px rgba(157, 123, 255, 0.02);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.clay-input:focus {
+  border-color: var(--primary-lavender);
+}
+
+/* Cloud Floating Background Elements */
+.bg-clouds {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.cloud {
+  position: absolute;
+  background: white;
+  border-radius: 100px;
+  opacity: 0.5;
+  filter: blur(4px);
+  animation: float-cloud 40s infinite linear;
+}
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+}
+.cloud-1 {
+  width: 150px;
+  height: 50px;
+  top: 15%;
+  left: -200px;
+  animation-duration: 45s;
+}
+.cloud-2 {
+  width: 200px;
+  height: 60px;
+  top: 60%;
+  left: -250px;
+  animation-duration: 60s;
+  animation-delay: 10s;
+}
+
+@keyframes float-cloud {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(100vw + 300px)); }
+}
+
+/* Mascot Keyframe Animations & Particles */
+@keyframes blink {
+  0%, 90%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+
+@keyframes speak {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1.3); }
+}
+
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes tilt-head {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(4deg); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scaleY(1.02) scaleX(1.01) translateY(-0.8px); }
+}
+
+@keyframes spin-sparkle {
+  0% { transform: rotate(0deg) scale(0.8); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(0.8); }
+}
+
+@keyframes float-up-fade {
+  0% { transform: translateY(15px) scale(0.6); opacity: 0; }
+  20% { opacity: 0.95; }
+  100% { transform: translateY(-40px) scale(1.15); opacity: 0; }
+}
+
+.char-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.part-heart, .part-star, .part-sparkle {
+  position: absolute;
+  font-size: 16px;
+  animation: float-up-fade 2.5s infinite ease-out;
+  opacity: 0;
+}
+
+.part-heart.h-1 { left: 15%; top: 40%; animation-delay: 0s; }
+.part-heart.h-2 { right: 15%; top: 30%; animation-delay: 0.8s; }
+.part-heart.h-3 { left: 45%; top: 10%; animation-delay: 1.6s; }
+
+.part-star.st-1 { left: 12%; top: 35%; animation-delay: 0s; }
+.part-star.st-2 { right: 12%; top: 40%; animation-delay: 0.9s; }
+.part-star.st-3 { left: 50%; top: 12%; animation-delay: 1.5s; }
+
+.part-sparkle.sp-1 { left: 20%; top: 45%; animation: float-up-fade 2.2s infinite ease-out, spin-sparkle 3s infinite linear; }
+.part-sparkle.sp-2 { right: 20%; top: 25%; animation: float-up-fade 2.2s infinite ease-out, spin-sparkle 2.5s infinite linear; animation-delay: 0.7s; }
+.part-sparkle.sp-3 { left: 40%; top: 15%; animation: float-up-fade 2.2s infinite ease-out, spin-sparkle 3.5s infinite linear; animation-delay: 1.4s; }
+
+/* Mic pulse ring */
+.audio-wave-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 3px solid var(--primary-lavender);
+  width: 110px;
+  height: 110px;
+  z-index: 1;
+  opacity: 0.3;
+}
+.audio-wave-ring.ring-1 {
+  animation: pulse-ring 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+.audio-wave-ring.ring-2 {
+  animation: pulse-ring 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
+  animation-delay: 1.1s;
+}
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.7; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+/* Thinking float bubble */
+.thinking-bubble {
+  position: absolute;
+  top: -15px;
+  background: white;
+  border: 3px solid var(--primary-lavender);
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--secondary-purple);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 6px 15px rgba(157, 123, 255, 0.1);
+  animation: float-bubble-bob 2.2s infinite ease-in-out;
+  z-index: 10;
+}
+
+@keyframes float-bubble-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.thinking-dot {
+  animation: blink-dot 1.4s infinite both;
+}
+.thinking-dot.d-1 { animation-delay: 0s; }
+.thinking-dot.d-2 { animation-delay: 0.2s; }
+.thinking-dot.d-3 { animation-delay: 0.4s; }
+
+@keyframes blink-dot {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@keyframes slideInUp {
+  0% { transform: translateY(20px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+/* Custom Scrollbar for Sidebar list */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(157, 123, 255, 0.2);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(157, 123, 255, 0.4);
+}
+
+/* Floating Heart Cascade Overlay (Done / Completed Session) */
+.heart-cascade-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.floating-heart-particle {
+  position: absolute;
+  bottom: -60px;
+  animation: floatUpAndFadeHeart 2.5s ease-in-out forwards;
+  opacity: 0;
+}
+
+@keyframes floatUpAndFadeHeart {
+  0% {
+    transform: translateY(0) scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(-115vh) scale(1.3) rotate(360deg);
+    opacity: 0;
+  }
 }
 </file>
 
@@ -5950,378 +6356,6 @@ export default function Checkin({ userId, onRefreshHistory, currentUser = "helna
       )}
     </div>
   )
-}
-</file>
-
-<file path="frontend/src/index.css">
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Caveat:wght@400;700&family=League+Script&display=swap');
-
-:root {
-  --bg-light: #F6F0FF;
-  --bg-card: #FFFFFF;
-  
-  /* Pastel Palette from Design Specification */
-  --primary-lavender: #BFA2FF;
-  --secondary-purple: #9D7BFF;
-  --soft-pink: #FFD6E7;
-  --cream: #FFF8F2;
-  --pastel-blue: #DDEEFF;
-  --pastel-yellow: #FFF1B8;
-  --soft-green: #D8F5D0;
-  
-  /* Text and details */
-  --text-primary: #2C2C4E;
-  --text-secondary: #48486A;
-  --border-glass: rgba(255, 255, 255, 0.7);
-  
-  --font-heading: 'Poppins', system-ui, sans-serif;
-  --font-body: 'Caveat', 'League Script', cursive;
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: var(--bg-light);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
-}
-
-#root {
-  width: 100%;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Typography */
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading);
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: -0.3px;
-}
-
-/* Claymorphism Cards */
-.clay-card {
-  background: var(--bg-card);
-  border-radius: 24px;
-  border: 3px solid #FFFFFF;
-  box-shadow: 0 10px 25px rgba(157, 123, 255, 0.07),
-              inset 3px 3px 5px rgba(255, 255, 255, 0.9),
-              inset -3px -3px 5px rgba(157, 123, 255, 0.04);
-  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
-}
-.clay-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 14px 30px rgba(157, 123, 255, 0.1),
-              inset 3px 3px 5px rgba(255, 255, 255, 0.9),
-              inset -3px -3px 5px rgba(157, 123, 255, 0.04);
-}
-
-/* Clay Button CTA (Duolingo-style pressable) */
-.clay-btn-cta {
-  background: linear-gradient(135deg, var(--primary-lavender) 0%, var(--secondary-purple) 100%);
-  color: white;
-  border-radius: 20px;
-  border: none;
-  border-bottom: 5px solid #845ef7;
-  font-family: var(--font-heading);
-  font-weight: 700;
-  padding: 14px 28px;
-  box-shadow: 0 6px 15px rgba(157, 123, 255, 0.15);
-  transition: all 0.1s ease;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  outline: none;
-  text-decoration: none;
-}
-.clay-btn-cta:hover {
-  transform: translateY(1px);
-  border-bottom-width: 4px;
-  box-shadow: 0 4px 10px rgba(157, 123, 255, 0.15);
-}
-.clay-btn-cta:active {
-  transform: translateY(4px);
-  border-bottom-width: 0px;
-  box-shadow: 0 2px 4px rgba(157, 123, 255, 0.1);
-}
-
-/* Clay Button Navigation */
-.clay-btn-nav {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 20px;
-  border-radius: 20px;
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-weight: 600;
-  font-family: var(--font-heading);
-  transition: all 0.2s ease;
-  border: 3px solid transparent;
-  cursor: pointer;
-  background: transparent;
-  outline: none;
-}
-.clay-btn-nav:hover {
-  color: var(--secondary-purple);
-  background: rgba(157, 123, 255, 0.04);
-}
-.clay-btn-nav.active {
-  background: var(--primary-lavender);
-  color: white;
-  box-shadow: 0 6px 12px rgba(157, 123, 255, 0.12),
-              inset 2px 2px 4px rgba(255, 255, 255, 0.4);
-  border-bottom: 4px solid var(--secondary-purple);
-}
-
-/* Clay Inputs */
-.clay-input {
-  width: 100%;
-  padding: 14px 20px;
-  border-radius: 18px;
-  border: 3px solid #FFFFFF;
-  background: var(--bg-light);
-  color: var(--text-primary);
-  font-family: var(--font-body);
-  font-weight: 500;
-  box-shadow: inset 2px 2px 5px rgba(157, 123, 255, 0.05),
-              inset -2px -2px 5px rgba(255, 255, 255, 0.8),
-              0 2px 5px rgba(157, 123, 255, 0.02);
-  outline: none;
-  transition: border-color 0.2s;
-}
-.clay-input:focus {
-  border-color: var(--primary-lavender);
-}
-
-/* Cloud Floating Background Elements */
-.bg-clouds {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.cloud {
-  position: absolute;
-  background: white;
-  border-radius: 100px;
-  opacity: 0.5;
-  filter: blur(4px);
-  animation: float-cloud 40s infinite linear;
-}
-.cloud::before, .cloud::after {
-  content: '';
-  position: absolute;
-  background: white;
-  border-radius: 50%;
-}
-.cloud-1 {
-  width: 150px;
-  height: 50px;
-  top: 15%;
-  left: -200px;
-  animation-duration: 45s;
-}
-.cloud-2 {
-  width: 200px;
-  height: 60px;
-  top: 60%;
-  left: -250px;
-  animation-duration: 60s;
-  animation-delay: 10s;
-}
-
-@keyframes float-cloud {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(calc(100vw + 300px)); }
-}
-
-/* Mascot Keyframe Animations & Particles */
-@keyframes blink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
-}
-
-@keyframes speak {
-  0%, 100% { transform: scaleY(0.4); }
-  50% { transform: scaleY(1.3); }
-}
-
-@keyframes gentle-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-2px); }
-}
-
-@keyframes tilt-head {
-  0%, 100% { transform: rotate(0deg); }
-  50% { transform: rotate(4deg); }
-}
-
-@keyframes breathe {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scaleY(1.02) scaleX(1.01) translateY(-0.8px); }
-}
-
-@keyframes spin-sparkle {
-  0% { transform: rotate(0deg) scale(0.8); }
-  50% { transform: rotate(180deg) scale(1.1); }
-  100% { transform: rotate(360deg) scale(0.8); }
-}
-
-@keyframes float-up-fade {
-  0% { transform: translateY(15px) scale(0.6); opacity: 0; }
-  20% { opacity: 0.95; }
-  100% { transform: translateY(-40px) scale(1.15); opacity: 0; }
-}
-
-.char-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 5;
-}
-
-.part-heart, .part-star, .part-sparkle {
-  position: absolute;
-  font-size: 16px;
-  animation: float-up-fade 2.5s infinite ease-out;
-  opacity: 0;
-}
-
-.part-heart.h-1 { left: 15%; top: 40%; animation-delay: 0s; }
-.part-heart.h-2 { right: 15%; top: 30%; animation-delay: 0.8s; }
-.part-heart.h-3 { left: 45%; top: 10%; animation-delay: 1.6s; }
-
-.part-star.st-1 { left: 12%; top: 35%; animation-delay: 0s; }
-.part-star.st-2 { right: 12%; top: 40%; animation-delay: 0.9s; }
-.part-star.st-3 { left: 50%; top: 12%; animation-delay: 1.5s; }
-
-.part-sparkle.sp-1 { left: 20%; top: 45%; animation: float-up-fade 2.2s infinite ease-out, spin-sparkle 3s infinite linear; }
-.part-sparkle.sp-2 { right: 20%; top: 25%; animation: float-up-fade 2.2s infinite ease-out, spin-sparkle 2.5s infinite linear; animation-delay: 0.7s; }
-.part-sparkle.sp-3 { left: 40%; top: 15%; animation: float-up-fade 2.2s infinite ease-out, spin-sparkle 3.5s infinite linear; animation-delay: 1.4s; }
-
-/* Mic pulse ring */
-.audio-wave-ring {
-  position: absolute;
-  border-radius: 50%;
-  border: 3px solid var(--primary-lavender);
-  width: 110px;
-  height: 110px;
-  z-index: 1;
-  opacity: 0.3;
-}
-.audio-wave-ring.ring-1 {
-  animation: pulse-ring 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
-}
-.audio-wave-ring.ring-2 {
-  animation: pulse-ring 2.2s infinite cubic-bezier(0.215, 0.61, 0.355, 1);
-  animation-delay: 1.1s;
-}
-
-@keyframes pulse-ring {
-  0% { transform: scale(0.85); opacity: 0.7; }
-  100% { transform: scale(1.5); opacity: 0; }
-}
-
-/* Thinking float bubble */
-.thinking-bubble {
-  position: absolute;
-  top: -15px;
-  background: white;
-  border: 3px solid var(--primary-lavender);
-  padding: 6px 14px;
-  border-radius: 16px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--secondary-purple);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 6px 15px rgba(157, 123, 255, 0.1);
-  animation: float-bubble-bob 2.2s infinite ease-in-out;
-  z-index: 10;
-}
-
-@keyframes float-bubble-bob {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-4px); }
-}
-
-.thinking-dot {
-  animation: blink-dot 1.4s infinite both;
-}
-.thinking-dot.d-1 { animation-delay: 0s; }
-.thinking-dot.d-2 { animation-delay: 0.2s; }
-.thinking-dot.d-3 { animation-delay: 0.4s; }
-
-@keyframes blink-dot {
-  0%, 100% { opacity: 0.2; }
-  50% { opacity: 1; }
-}
-
-@keyframes slideInUp {
-  0% { transform: translateY(20px); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-/* Custom Scrollbar for Sidebar list */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(157, 123, 255, 0.2);
-  border-radius: 10px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(157, 123, 255, 0.4);
-}
-
-/* Floating Heart Cascade Overlay (Done / Completed Session) */
-.heart-cascade-overlay {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 9999;
-  overflow: hidden;
-}
-
-.floating-heart-particle {
-  position: absolute;
-  bottom: -60px;
-  animation: floatUpAndFadeHeart 2.5s ease-in-out forwards;
-  opacity: 0;
-}
-
-@keyframes floatUpAndFadeHeart {
-  0% {
-    transform: translateY(0) scale(0.5) rotate(0deg);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.95;
-  }
-  80% {
-    opacity: 0.95;
-  }
-  100% {
-    transform: translateY(-115vh) scale(1.3) rotate(360deg);
-    opacity: 0;
-  }
 }
 </file>
 
